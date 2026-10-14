@@ -10,4 +10,4 @@
 - Usar exclusivamente datos ficticios durante el prototipo. No versionar secretos ni incluir credenciales privilegiadas en el frontend.
 - Mantener el dominio independiente de frameworks y persistencia, y la separación de datos por profesional. El administrador no accede a información personal o clínica de pacientes.
 - La biblioteca de referencia no instala skills, agentes ni controles técnicos. No añadirlos sin necesidad y autorización aplicable.
-- Estado actual: documentación únicamente. No existen comandos verificados de instalación, pruebas, lint o compilación; añadirlos al preparar y comprobar la base técnica.
+- Base local 0B: consultar docs/DEVELOPMENT_WORKFLOW.md. Comandos verificados: npm ci, npm test, npm run typecheck y npm run build. Prerrequisitos: Node 24.21+ dentro de la línea 24 y npm 11. Las pruebas de API utilizan un puerto local efímero. Lint y CI todavía no están configurados.
