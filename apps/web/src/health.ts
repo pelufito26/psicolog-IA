@@ -1,10 +1,16 @@
-export async function checkHealth({ fetcher = fetch, signal }: {
-  fetcher?: typeof fetch; signal?: AbortSignal;
+export async function checkHealth({
+  fetcher = fetch,
+  signal,
+}: {
+  fetcher?: typeof fetch;
+  signal?: AbortSignal;
 } = {}): Promise<void> {
   if (signal?.aborted) throw new Error('Consulta cancelada');
   const controller = new AbortController();
   let rejectCancellation!: (reason: Error) => void;
-  const cancellation = new Promise<never>((_resolve, reject) => { rejectCancellation = reject; });
+  const cancellation = new Promise<never>((_resolve, reject) => {
+    rejectCancellation = reject;
+  });
   const cancel = () => {
     controller.abort();
     rejectCancellation(new Error('Consulta cancelada o vencida'));

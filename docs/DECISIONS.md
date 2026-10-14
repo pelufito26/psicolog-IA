@@ -18,3 +18,9 @@ Las decisiones originales de producto y ARQ-01–03 permanecen en PROJECT_CONTEX
 ## DEC-002 — Base técnica local 0B
 
 Estado: aprobado, 14 de octubre de 2026. El usuario aprobó spec 0B-r1 y después el plan y T1–T5 tras aclarar que la API es el backend propio. Alcance: base local con npm workspaces, Node 24 LTS, frontend React/Vite y API Express, pruebas y compilación; sin Supabase, funciones clínicas o publicación. Versiones y alternativas: specs/001-base-tecnica/plan.md. Evidencia: specs/001-base-tecnica/validation.md. La autorización no incluye push, merge o despliegue de esta etapa.
+
+## DEC-003 — Calidad local y CI de 0C
+
+Estado: aprobado, 14 de octubre de 2026. El usuario aprobó spec 0C-r1 y el plan/tareas 0C-plan-r1 y 0C-tasks-r1 mediante «sip», incluido pasar TypeScript de 7.0.2 a 6.0.3 para satisfacer el soporte declarado de typescript-eslint 8.71.2. Se conservan stack, contratos y Node 24.21.0; las verificaciones de 0B se repiten.
+
+Se adoptan ESLint, Prettier, comando check y workflow de lectura para PR/main, con acciones fijadas por SHA. Autorización: instalación, formato inicial, correcciones mínimas y validación local. Sin publicación, merge, despliegue ni protección de ramas. La evidencia remota de GitHub queda pendiente hasta la publicación autorizada. Versiones, reglas y alternativas en specs/002-calidad-ci/plan.md.

@@ -17,5 +17,6 @@ El proyecto dispone de una base técnica local: interfaz inicial y API de dispon
 - [Validación de la etapa 0A](docs/VALIDACION_0A.md).
 - [Ejecución y comprobaciones locales](docs/DEVELOPMENT_WORKFLOW.md).
 - [Validación de 0B](specs/001-base-tecnica/validation.md).
+- [Calidad y CI de 0C](specs/002-calidad-ci/validation.md).
 
 Los documentos adicionales y las especificaciones se crearán cuando haya contenido concreto. Antes de implementar cada cambio se aprobarán su especificación y su plan con tareas.
