@@ -26,3 +26,13 @@ No se añadieron pruebas que repitan la configuración. Los ensayos de defectos 
 ## Remoto pendiente
 
 RF-04–07: observar instalación y controles sobre una PR, ensayo de fallo deliberado autorizado y revisión final satisfactoria. Observar push/main después de merge. El archivo de workflow no sustituye esa evidencia. No se publica, modifica protecciones ni declara 0C completa en esta entrega local.
+
+## Publicación y ensayo remoto
+
+El usuario autorizó publicar 0C mediante «subir». PR #3: https://github.com/pelufito26/psicolog-IA/pull/3 .
+
+Ensayo controlado: revisión 4a7a37159d2b0721467eca2f922efa59beab12b2, ejecución https://github.com/pelufito26/psicolog-IA/actions/runs/38650814334 . Checkout, preparación e instalación pasaron; lint falló por unusedCiProbe en apps/api/src/ci-probe.ts (regla no-unused-vars), confirmado en logs. Los pasos siguientes fueron omitidos y la ejecución concluyó failure. El defecto se retiró en d6f8c61988e0dfadb50c046117df04c6b50df29d, sin reescribir historia ni incorporarlo a main.
+
+La revisión final y el disparador push/main deben confirmarse mediante ejecuciones reales. El merge sigue reservado al usuario.
+
+Revisión corregida d6f8c61988e0dfadb50c046117df04c6b50df29d: ejecución https://github.com/pelufito26/psicolog-IA/actions/runs/38650911375 completada satisfactoriamente. Pasaron instalación, lint, formato, tipos, pruebas y compilación. Pendiente únicamente observar push/main tras el merge y confirmar checks de cualquier revisión documental posterior.
