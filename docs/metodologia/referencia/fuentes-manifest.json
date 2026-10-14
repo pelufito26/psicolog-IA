@@ -1,0 +1,23 @@
+{
+  "consulta": "2026-10-14",
+  "fuentes": [
+    {
+      "archivo": "Apuntes-Curso-Desarrollo-IA-Dia-1.pdf",
+      "paginas": 20,
+      "sha256": "0a741c5cc102004a61c17b9f36bf263a1966a94f3e4642aee1fad359931612c0",
+      "incluido_en_paquete": false
+    },
+    {
+      "archivo": "Apuntes-Curso-Desarrollo-IA-Dia-2.pdf",
+      "paginas": 20,
+      "sha256": "ab8b1da844506164cc1b594f67035b61ba22d47c5f2a9f7b54135195c9bfdde9",
+      "incluido_en_paquete": false
+    },
+    {
+      "archivo": "Apuntes-Curso-Desarrollo-IA-Dia-3.pdf",
+      "paginas": 11,
+      "sha256": "3ca44b8043cfaf7aee4713e1c0ef4b2126afbef4ae259be285907d3268a83264",
+      "incluido_en_paquete": false
+    }
+  ]
+}
