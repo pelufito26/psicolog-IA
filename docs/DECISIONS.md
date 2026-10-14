@@ -14,3 +14,7 @@ Las decisiones originales de producto y ARQ-01–03 permanecen en PROJECT_CONTEX
 - Efecto: las especificaciones se crearán con contenido concreto; la copia metodológica es referencia, no una instalación de skills ni de agentes.
 - Alternativas: un enlace externo obliga a recuperar la biblioteca en cada entorno; un submódulo añade preparación de checkout. Se adopta una copia documental fijada para lectura local.
 - Pendiente: herramienta de paquetes, versión de Node, esquema relacional, acceso a Supabase, simulación del profesional y textos completos de CU01–CU11. Requieren propuestas y aprobación antes de la implementación que dependa de ellos.
+
+## DEC-002 — Base técnica local 0B
+
+Estado: aprobado, 14 de octubre de 2026. El usuario aprobó spec 0B-r1 y después el plan y T1–T5 tras aclarar que la API es el backend propio. Alcance: base local con npm workspaces, Node 24 LTS, frontend React/Vite y API Express, pruebas y compilación; sin Supabase, funciones clínicas o publicación. Versiones y alternativas: specs/001-base-tecnica/plan.md. Evidencia: specs/001-base-tecnica/validation.md. La autorización no incluye push, merge o despliegue de esta etapa.
