@@ -27,15 +27,15 @@ Separar creación de la aplicación Express de su inicio. Las pruebas usan puert
 
 ## Archivos previstos
 
-| Rutas | Responsabilidad |
-|---|---|
-| package.json, package-lock.json, .node-version, .gitignore | Workspaces, versión de runtime, reproducibilidad y exclusiones |
-| apps/api/package.json, tsconfig.json, src/app.ts, src/server.ts, src/app.test.ts | API, arranque separado y prueba HTTP |
-| apps/web/package.json, tsconfig.json, vite.config.ts, index.html | Configuración de interfaz y proxy local |
-| apps/web/src/main.tsx, App.tsx, App.test.tsx, styles.css | Pantalla y estados verificables |
-| apps/web/src/health.ts, health.test.ts | Consulta, validación de respuesta, cancelación y plazo |
-| docs/DEVELOPMENT_WORKFLOW.md, README.md, AGENTS.md | Instrucciones y comandos realmente comprobados |
-| specs/001-base-tecnica/validation.md, tasks.md, docs/DECISIONS.md | Evidencia y decisiones aprobadas |
+| Rutas                                                                            | Responsabilidad                                                |
+| -------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| package.json, package-lock.json, .node-version, .gitignore                       | Workspaces, versión de runtime, reproducibilidad y exclusiones |
+| apps/api/package.json, tsconfig.json, src/app.ts, src/server.ts, src/app.test.ts | API, arranque separado y prueba HTTP                           |
+| apps/web/package.json, tsconfig.json, vite.config.ts, index.html                 | Configuración de interfaz y proxy local                        |
+| apps/web/src/main.tsx, App.tsx, App.test.tsx, styles.css                         | Pantalla y estados verificables                                |
+| apps/web/src/health.ts, health.test.ts                                           | Consulta, validación de respuesta, cancelación y plazo         |
+| docs/DEVELOPMENT_WORKFLOW.md, README.md, AGENTS.md                               | Instrucciones y comandos realmente comprobados                 |
+| specs/001-base-tecnica/validation.md, tasks.md, docs/DECISIONS.md                | Evidencia y decisiones aprobadas                               |
 
 Añadir configuración auxiliar de tipos y pruebas solo si es necesaria para estos componentes. No modificar PROJECT_CONTEXT.md ni la copia de metodología.
 
@@ -47,18 +47,18 @@ Los scripts raíz delegan a los workspaces. Las comprobaciones de tipos y build 
 
 ## Cobertura y verificación
 
-| Requisitos | Evidencia prevista | Tarea |
-|---|---|---|
-| RF-01, RNF-01 | npm ci y ejecución desde una copia limpia sin dependencias preexistentes; versiones documentadas | T1, T5 |
-| RF-02, RNF-06 | Prueba de renderizado y revisión en navegador de título, estado y legibilidad | T3, T5 |
-| RF-03 | Prueba HTTP real de código 200, JSON y ausencia de información extra | T2 |
-| RF-04 | Prueba de transición y comprobación en navegador con API activa | T3, T4, T5 |
-| RF-05 | Pruebas de fallo de red, error HTTP, JSON inválido y status inesperado; navegador con API apagada | T3, T5 |
-| RF-06 | Prueba de estado pendiente, vencimiento a 5 segundos y limpieza al desmontar | T3 |
-| RF-07 | typecheck y build de ambos workspaces | T4, T5 |
-| RF-08 | Arranque de backend compilado y consulta HTTP | T4, T5 |
-| RNF-02–05 | Revisión de dependencias, diff, exclusiones y bind local; ejecución sin credenciales ni Supabase | T1–T5 |
-| RNF-07 | Matriz de validation.md con comandos, resultados y revisión comprobada | T5 |
+| Requisitos    | Evidencia prevista                                                                                | Tarea      |
+| ------------- | ------------------------------------------------------------------------------------------------- | ---------- |
+| RF-01, RNF-01 | npm ci y ejecución desde una copia limpia sin dependencias preexistentes; versiones documentadas  | T1, T5     |
+| RF-02, RNF-06 | Prueba de renderizado y revisión en navegador de título, estado y legibilidad                     | T3, T5     |
+| RF-03         | Prueba HTTP real de código 200, JSON y ausencia de información extra                              | T2         |
+| RF-04         | Prueba de transición y comprobación en navegador con API activa                                   | T3, T4, T5 |
+| RF-05         | Pruebas de fallo de red, error HTTP, JSON inválido y status inesperado; navegador con API apagada | T3, T5     |
+| RF-06         | Prueba de estado pendiente, vencimiento a 5 segundos y limpieza al desmontar                      | T3         |
+| RF-07         | typecheck y build de ambos workspaces                                                             | T4, T5     |
+| RF-08         | Arranque de backend compilado y consulta HTTP                                                     | T4, T5     |
+| RNF-02–05     | Revisión de dependencias, diff, exclusiones y bind local; ejecución sin credenciales ni Supabase  | T1–T5      |
+| RNF-07        | Matriz de validation.md con comandos, resultados y revisión comprobada                            | T5         |
 
 Las pruebas cubren comportamiento, no archivos o configuración replicados. Escribir primero las pruebas pertinentes para API y manejo de estados, confirmar fallo por comportamiento pendiente y luego implementar. El ensayo de copia limpia puede escribir en un directorio temporal autorizado, sin alterar los archivos de trabajo.
 

@@ -45,15 +45,15 @@ HU-01: Como desarrollador, quiero instalar, ejecutar y comprobar la base del fro
 
 ## Casos límite y aceptación
 
-| Escenario | Resultado esperado | Requisitos |
-|---|---|---|
-| Instalación desde copia limpia | Instrucciones suficientes y dependencia bloqueada reproducible | RF-01, RNF-01 |
-| Frontend y API activos | Identidad visible y disponibilidad confirmada por respuesta válida | RF-02–04 |
-| API apagada | Mensaje legible de disponibilidad no confirmada | RF-05, RNF-06 |
-| Respuesta incorrecta o error HTTP | No se informa éxito; pantalla permanece utilizable | RF-05 |
-| Solicitud que no termina | Estado pendiente seguido de error al vencer el plazo acordado | RF-06 |
-| Backend compilado | Arranca y responde como la API de desarrollo | RF-07–08 |
-| Inspección de archivos y configuración | Sin datos reales ni secretos; servicios locales por defecto | RNF-02–05 |
+| Escenario                              | Resultado esperado                                                 | Requisitos    |
+| -------------------------------------- | ------------------------------------------------------------------ | ------------- |
+| Instalación desde copia limpia         | Instrucciones suficientes y dependencia bloqueada reproducible     | RF-01, RNF-01 |
+| Frontend y API activos                 | Identidad visible y disponibilidad confirmada por respuesta válida | RF-02–04      |
+| API apagada                            | Mensaje legible de disponibilidad no confirmada                    | RF-05, RNF-06 |
+| Respuesta incorrecta o error HTTP      | No se informa éxito; pantalla permanece utilizable                 | RF-05         |
+| Solicitud que no termina               | Estado pendiente seguido de error al vencer el plazo acordado      | RF-06         |
+| Backend compilado                      | Arranca y responde como la API de desarrollo                       | RF-07–08      |
+| Inspección de archivos y configuración | Sin datos reales ni secretos; servicios locales por defecto        | RNF-02–05     |
 
 Si un puerto está ocupado, las instrucciones deben permitir identificar y resolver el conflicto; no detener procesos ajenos automáticamente ni cambiar la configuración silenciosamente.
 

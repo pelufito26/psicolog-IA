@@ -35,7 +35,17 @@ El backend compilado queda en apps/api/dist y la interfaz en apps/web/dist. Esas
 
 Los puertos 3001 y 5173 son fijos y locales. Si están ocupados, cerrar únicamente las instancias propias anteriores o identificar quién los utiliza antes de intervenir. No se detienen procesos ajenos automáticamente ni se cambia de puerto silenciosamente.
 
-No hay despliegue, Supabase, autenticación o funciones clínicas. La configuración completa de lint/formato y CI corresponde a 0C.
+No hay despliegue, Supabase, autenticación o funciones clínicas.
+
+## Calidad local y CI
+
+Ejecutar npm run check para lint, formato, tipos, pruebas y build. Interrumpe al primer fallo. También pueden ejecutarse npm run lint y npm run format:check por separado; no modifican archivos.
+
+Para aplicar formato explícitamente: npm run format:write. Prettier usa dos espacios, comillas simples, punto y coma, ancho 100 y finales LF. Excluye el lockfile generado, secretos, salidas, dependencias, PROJECT_CONTEXT.md y la copia de metodología. Las exclusiones están en .prettierignore. ESLint revisa código/configuración propios incluidos los tests; cualquier advertencia provoca fallo. No se activó lint dependiente de información de tipos: ese control se ejecuta por separado.
+
+TypeScript se ajustó a 6.0.3 porque la integración de lint elegida no soporta 7. Esto mantiene el stack y los contratos de la aplicación; las verificaciones de 0B se vuelven a ejecutar. Consultar DEC-003 y la evidencia de 0C.
+
+El workflow Calidad usa Node desde .node-version y npm 11.13.0 en ubuntu-24.04. Ejecuta instalación, lint, formato, tipos, pruebas y build en PR hacia main y push en main. Tiene permisos de lectura y límite de 15 minutos; no despliega ni incorpora PR automáticamente. Las protecciones de rama no se configuraron. La ejecución remota no se considera comprobada hasta observarla en GitHub.
 
 ## Evidencia
 
