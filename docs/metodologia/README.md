@@ -15,6 +15,7 @@ Se conserva en referencia/ una copia de los Markdown y del manifiesto de fuentes
 - Las normas propias están en ../../AGENTS.md, ../constitution.md y ../PROJECT_CONTEXT.md; las plantillas son ejemplos para adaptar.
 - Aprobar especificación y después plan/tareas antes de implementar. Las autorizaciones existentes no se vuelven a pedir mientras mantengan revisión y alcance.
 - No crear documentos vacíos ni pruebas sin relación con un criterio de aceptación.
+- Aplicar el método con detalle proporcional: especificaciones breves para funciones pequeñas, plan y tareas sin repetir requisitos y una evidencia de validación enlazada a pruebas/CI. Mantener las dos puertas; ejecutar el lote aprobado sin consultas rutinarias. Ver DEC-008.
 - Las futuras actualizaciones de la biblioteca no se adoptan automáticamente.
 
 La carpeta referencia/skills/sdd contiene una skill como material de consulta. No se ha instalado en el catálogo, activado ni ejecutado. Tampoco se han configurado multiagentes, MCP o permisos por copiar esta biblioteca. La guía de integración expresa recomendaciones del autor; su comportamiento debe verificarse en el cliente antes de instalar herramientas.

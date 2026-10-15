@@ -70,3 +70,9 @@ Crea o reutiliza exclusivamente el profesional con email profesional-demo@exampl
 Abrir http://127.0.0.1:5173 con la API en 127.0.0.1:3001. POST /api/pacientes acepta JSON de hasta 16 KiB, cuatro campos personales y confirmacionDuplicado opcional. El profesional viene del servidor. Origin presente debe ser localhost o 127.0.0.1 en puerto 5173; no se habilita CORS abierto. La confirmación vence en diez minutos y queda ligada a datos/profesional/proceso. El navegador espera hasta doce segundos y no reintenta escrituras automáticamente. Un fallo de red puede dejar un resultado incierto: una nueva solicitud sin confirmación vuelve a buscar duplicados.
 
 npm run check verifica dominio, API y UI. npm run test:database agrega pruebas de registro y concurrencia a las comprobaciones del esquema en dos bases desechables; no requiere credenciales de Supabase. No usar este contexto ficticio como autenticación ni exponer el servidor públicamente.
+
+## CU02 — Listado local
+
+La pantalla inicial muestra Pacientes. POST /api/pacientes/consulta recibe busqueda y pagina en JSON, con el mismo contexto local, bandera y protección Origin de CU01; las respuestas son no-store. Muestra páginas de 20 con apellido, nombre, edad calculada en Montevideo y teléfono. La búsqueda es parcial y literal en nombre o apellido, sin distinguir acentos/caso; el orden normalizado desempata por nombre e ID. Para nacidos el 29/2, los años no bisiestos cumplen el 1/3. Tras guardar o cancelar un alta, vuelve al listado y consulta de nuevo conservando el filtro. No incluye perfil.
+
+El prototipo lee los candidatos del profesional y compara/pagina en memoria; revisar esta estrategia antes de escalar. No registrar búsquedas/pacientes ni persistirlos en navegador. La consulta vence a los 12 segundos. Evidencia única: specs/005-listar-pacientes/validation.md. Los tests/CI incluyen paginación y separación de profesionales en PostgreSQL desechable; no crean filas en Supabase.

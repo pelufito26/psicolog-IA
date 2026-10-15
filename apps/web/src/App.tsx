@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { checkHealth } from './health';
-import { PacienteForm } from './pacientes/PacienteForm';
+import { Pacientes } from './pacientes/Pacientes';
 
 const defaultChecker = (signal?: AbortSignal) => checkHealth({ signal });
 const messages = {
@@ -14,7 +14,6 @@ export function App({
   checker?: (signal?: AbortSignal) => Promise<void>;
 }) {
   const [state, setState] = useState<keyof typeof messages>('pending');
-  const [showForm, setShowForm] = useState(true);
   useEffect(() => {
     const controller = new AbortController();
     setState('pending');
@@ -33,13 +32,7 @@ export function App({
       <p className="eyebrow">ESPACIO DE DESARROLLO</p>
       <h1>PsicologIA</h1>
       <p className="intro">Base técnica en preparación</p>
-      {showForm ? (
-        <PacienteForm onCancel={() => setShowForm(false)} />
-      ) : (
-        <button type="button" onClick={() => setShowForm(true)}>
-          Registrar paciente
-        </button>
-      )}
+      <Pacientes />
       <section className="status-card" aria-labelledby="connection-title">
         <h2 id="connection-title">Conexión local</h2>
         <p role="status" aria-label="Estado de la API" aria-live="polite" className={state}>

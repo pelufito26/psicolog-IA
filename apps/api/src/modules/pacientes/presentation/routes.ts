@@ -1,30 +1,34 @@
 import express, { type ErrorRequestHandler } from 'express';
 import type { RegistroHandler } from '../application/registrar.js';
-export function pacienteRoutes(register: RegistroHandler) {
+export function pacienteRoutes(register: RegistroHandler, list: RegistroHandler) {
   const router = express.Router();
-  router.post(
-    '/',
-    (req, res, next) => {
-      const origin = req.get('origin');
-      if (
-        origin !== undefined &&
-        !['http://127.0.0.1:5173', 'http://localhost:5173'].includes(origin)
-      ) {
-        res.status(403).json({ codigo: 'ORIGEN_NO_PERMITIDO' });
-        return;
-      }
-      if (!req.is('application/json')) {
-        res.status(415).json({ codigo: 'TIPO_NO_PERMITIDO' });
-        return;
-      }
-      next();
-    },
-    express.json({ limit: '16kb' }),
-    async (req, res) => {
-      const result = await register(req.body);
-      res.status(result.status).json(result.body);
-    },
-  );
+  const route = (path: string, handler: RegistroHandler) =>
+    router.post(
+      path,
+      (req, res, next) => {
+        res.set('Cache-Control', 'no-store');
+        const origin = req.get('origin');
+        if (
+          origin !== undefined &&
+          !['http://127.0.0.1:5173', 'http://localhost:5173'].includes(origin)
+        ) {
+          res.status(403).json({ codigo: 'ORIGEN_NO_PERMITIDO' });
+          return;
+        }
+        if (!req.is('application/json')) {
+          res.status(415).json({ codigo: 'TIPO_NO_PERMITIDO' });
+          return;
+        }
+        next();
+      },
+      express.json({ limit: '16kb' }),
+      async (req, res) => {
+        const result = await handler(req.body);
+        res.status(result.status).json(result.body);
+      },
+    );
+  route('/', register);
+  route('/consulta', list);
   const errors: ErrorRequestHandler = (error, _req, res, _next) => {
     void _next;
     const status =

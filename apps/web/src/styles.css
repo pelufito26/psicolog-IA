@@ -198,3 +198,43 @@ button.secondary {
     width: 100%;
   }
 }
+.search-form {
+  margin-top: 1.5rem;
+}
+.search-form label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+.search-form input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.8rem;
+  border: 1px solid #b8c9c2;
+  border-radius: 0.4rem;
+  font: inherit;
+}
+.patients-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  table-layout: fixed;
+}
+.patients-table caption {
+  text-align: left;
+  margin-bottom: 0.6rem;
+}
+.patients-table th,
+.patients-table td {
+  text-align: left;
+  padding: 0.65rem 0.3rem;
+  border-bottom: 1px solid #dce5df;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 580px) {
+  .patients-table th,
+  .patients-table td {
+    font-size: 0.85rem;
+    padding: 0.6rem 0.15rem;
+  }
+}

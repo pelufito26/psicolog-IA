@@ -21,5 +21,6 @@ El prototipo local permite registrar pacientes ficticios y advertir posibles dup
 - [Persistencia de desarrollo](docs/DATABASE.md): migración aplicada, cuenta restringida y conexión TLS verificadas.
 - [Preparación 0E](docs/REVISION_0E.md).
 - [Validación de CU01](specs/004-registrar-paciente/validation.md): registro de pacientes, pruebas y demo.
+- [Validación de CU02](specs/005-listar-pacientes/validation.md): listado, búsqueda, edad y paginación del profesional.
 
 Los documentos adicionales y las especificaciones se crearán cuando haya contenido concreto. Antes de implementar cada cambio se aprobarán su especificación y su plan con tareas.
