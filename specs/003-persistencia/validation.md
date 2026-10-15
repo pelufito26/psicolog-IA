@@ -37,3 +37,7 @@ Cuenta psicologia_app creada con aprobación del usuario, miembro de psicologia_
 Credencial nueva generada y transferida cifrada; archivo local ignorado por Git y ACL de usuario. Prueba del backend compilado: conexión y rollback confirmados. La CA oficial se obtuvo de la URL usada por el dashboard de Supabase; TLS verificó cadena y hostname, pg_stat_ssl confirmó TLSv1.3. Intentos DELETE y CREATE rechazados con 42501 desde la cuenta real. Recuentos finales cero en las cuatro tablas.
 
 El sobre cifrado se retiró del comentario de rol. Se eliminaron las copias temporales de contraseña/transferencia. No se versionaron contraseñas, certificados privados o claves privadas. Registro operativo: versiones remotas 20261015141233 y 20261015142029; precaución de conciliación del historial en docs/DATABASE.md. T6 completa. Publicación y validación del nuevo job CI de 0D siguen pendientes.
+
+## CI remoto de PR #4
+
+Publicación autorizada por el usuario. Ejecución https://github.com/pelufito26/psicolog-IA/actions/runs/38751227564 satisfactoria: job Controles de calidad completo e Integración PostgreSQL 17 con migraciones y restricciones sobre bases desechables. No se usaron secretos Supabase en CI. La ejecución en main queda pendiente del merge del usuario.
