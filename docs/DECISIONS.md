@@ -36,3 +36,9 @@ El 15 de octubre de 2026 el usuario aprobó el archivo SQL concreto y su destino
 ## DEC-006 — Cuenta restringida y conexión T6
 
 Aprobada por el usuario el 15 de octubre de 2026, incluida reanudación tras detener el paso de cifrado interactivo. Cuenta psicologia_app exclusivamente de desarrollo, con LOGIN y membresía del grupo existente, sin borrado ni administración. Credencial nueva local excluida de Git; conexión directa verificada mediante CA oficial y TLS 1.3. Ensayos de backend y permisos reales satisfactorios con rollback. No se autoriza publicación por concluir T6 ni se considera autorización clínica productiva.
+
+## DEC-007 — CU01 y contexto ficticio de desarrollo
+
+Aprobado el 15 de octubre de 2026: el usuario pidió una propuesta basada en el resumen, aprobó CU01-r1 mediante «sisi vamo» y aprobó después CU01-plan-r1/CU01-tasks-r1 mediante «si». Se adoptan teléfono de 7–15 dígitos con + opcional, nombres con espacios normalizados, duplicados por nombre/apellido sin acentos/caso y mismo nacimiento dentro del profesional, advertencia y confirmación explícita. No se atribuyen estas precisiones a un caso original no recuperado.
+
+El profesional ficticio proviene del servidor, habilitado expresamente solo en desarrollo. No equivale a autenticación; el rol SQL técnico no aísla identidades reales. Se autorizaron T1–T6 y la demo en vrqmpdedckkgxpdleepr con un profesional y hasta dos pacientes ficticios. No incluye publicación, merge o despliegue. Implementación sin nuevas dependencias ni cambios al esquema; límites HTTP, token y timeout en el plan. Evidencia en specs/004-registrar-paciente/validation.md.

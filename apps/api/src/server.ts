@@ -1,6 +1,8 @@
 import { createApp } from './app.js';
+import { createRegistrationRuntime } from './modules/pacientes/presentation/runtime.js';
 
-const server = createApp().listen(3001, '127.0.0.1', () => {
+const runtime = createRegistrationRuntime(process.env);
+const server = createApp({ register: runtime.register }).listen(3001, '127.0.0.1', () => {
   console.log('API local: http://127.0.0.1:3001');
 });
 server.on('error', (error: NodeJS.ErrnoException) => {
@@ -12,5 +14,9 @@ server.on('error', (error: NodeJS.ErrnoException) => {
   process.exitCode = 1;
 });
 for (const signal of ['SIGINT', 'SIGTERM'] as const) {
-  process.once(signal, () => server.close());
+  process.once(signal, () =>
+    server.close(() => {
+      void runtime.close();
+    }),
+  );
 }

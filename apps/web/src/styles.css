@@ -59,3 +59,142 @@ h2 {
 .footnote {
   margin-top: 1.5rem;
 }
+
+.patient-card {
+  background: #fff;
+  border: 1px solid #d9e3da;
+  border-radius: 20px;
+  padding: 2rem;
+  margin: 2rem 0;
+}
+.section-heading h2 {
+  font-size: 1.6rem;
+  margin: 0.65rem 0;
+}
+.section-heading p {
+  color: #526b61;
+  line-height: 1.6;
+}
+.step-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: #526b61;
+}
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.4rem;
+  margin: 2rem 0;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.field label {
+  font-weight: 650;
+  font-size: 0.9rem;
+}
+.field input {
+  width: 100%;
+  padding: 0.8rem;
+  border: 1px solid #b7c9bd;
+  border-radius: 8px;
+  background: #fff;
+  color: #173a35;
+  font: inherit;
+  min-height: 46px;
+}
+.field input:focus {
+  outline: 3px solid #a3cfc0;
+  outline-offset: 2px;
+}
+.field input[aria-invalid='true'] {
+  border-color: #a43f30;
+}
+.field-error,
+.form-error {
+  font-size: 0.85rem;
+  color: #8b392b;
+}
+.field-hint,
+.required-note {
+  font-size: 0.78rem;
+  color: #526b61;
+  line-height: 1.5;
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+button {
+  border: 1px solid #205d4c;
+  background: #205d4c;
+  color: white;
+  padding: 0.85rem 1.1rem;
+  border-radius: 8px;
+  font: inherit;
+  font-weight: 650;
+  cursor: pointer;
+}
+button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+button:focus-visible {
+  outline: 3px solid #83b7a4;
+  outline-offset: 3px;
+}
+button.secondary {
+  background: white;
+  color: #205d4c;
+}
+.duplicate-box {
+  padding: 1.3rem;
+  border: 1px solid #dbbf76;
+  border-radius: 12px;
+  background: #fffbec;
+  margin-bottom: 1rem;
+}
+.duplicate-box p {
+  line-height: 1.6;
+}
+.duplicate-box dt {
+  font-size: 0.8rem;
+  color: #655632;
+}
+.duplicate-box dd {
+  margin: 0.2rem 0 1rem;
+  overflow-wrap: anywhere;
+}
+.form-message {
+  line-height: 1.6;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+.shell {
+  width: min(100% - 2rem, 850px);
+  margin: 6vh auto;
+}
+.status-card {
+  padding: 1rem 1.5rem;
+}
+.intro {
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 580px) {
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .patient-card {
+    padding: 1.3rem;
+  }
+  .shell {
+    margin: 2rem auto;
+  }
+  .actions button {
+    width: 100%;
+  }
+}

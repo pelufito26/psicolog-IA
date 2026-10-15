@@ -4,7 +4,7 @@ Aplicación web prevista para profesionales de psicología: pacientes, fichas cl
 
 ## Estado
 
-El proyecto dispone de una base técnica local: interfaz inicial y API de disponibilidad. Todavía no hay funciones clínicas, Supabase ni autenticación productiva. El prototipo utilizará exclusivamente datos ficticios.
+El prototipo local permite registrar pacientes ficticios y advertir posibles duplicados antes de confirmarlos. Usa una API propia y PostgreSQL en Supabase de desarrollo. Todavía no hay autenticación productiva, fichas ni sesiones en la interfaz; utilizar exclusivamente datos ficticios.
 
 ## Documentación
 
@@ -18,6 +18,8 @@ El proyecto dispone de una base técnica local: interfaz inicial y API de dispon
 - [Ejecución y comprobaciones locales](docs/DEVELOPMENT_WORKFLOW.md).
 - [Validación de 0B](specs/001-base-tecnica/validation.md).
 - [Calidad y CI de 0C](specs/002-calidad-ci/validation.md).
-- [Persistencia de desarrollo en preparación](docs/DATABASE.md): migración y pruebas locales; todavía sin aplicar a Supabase.
+- [Persistencia de desarrollo](docs/DATABASE.md): migración aplicada, cuenta restringida y conexión TLS verificadas.
+- [Preparación 0E](docs/REVISION_0E.md).
+- [Validación de CU01](specs/004-registrar-paciente/validation.md): registro de pacientes, pruebas y demo.
 
 Los documentos adicionales y las especificaciones se crearán cuando haya contenido concreto. Antes de implementar cada cambio se aprobarán su especificación y su plan con tareas.
