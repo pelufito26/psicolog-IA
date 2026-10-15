@@ -20,7 +20,7 @@ Aprobación: el usuario aprobó T1–T4 mediante «si». No autoriza T5–T6 ni 
   - Depende de T1–T4 y aprobación del SQL concreto y destino.
   - Reinspeccionar vrqmpdedckkgxpdleepr, mostrar SQL final y aplicar solo cambios aprobados mediante herramienta de migraciones.
   - Hecho cuando: schema e historial coinciden y ensayos reversibles confirman integridad/permisos. Sin resets, eliminaciones o cambios de schemas ajenos.
-- [ ] T6 — Configurar cuenta técnica y validar conexión real.
+- [x] T6 — Configurar cuenta técnica y validar conexión real.
   - Depende de T5 y aprobación de creación de acceso concreto.
   - Configurar credencial nueva segura fuera de Git/chat; obtener endpoint real de Connect.
   - Hecho cuando: backend con cuenta restringida realiza db:check sobre proyecto de desarrollo, rollback confirmado y evidencia sin secretos.

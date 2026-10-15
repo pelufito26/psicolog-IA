@@ -29,3 +29,11 @@ El usuario aprobó el SQL concreto para vrqmpdedckkgxpdleepr mediante «si». Se
 Se verificaron cuatro tablas con RLS, sin SELECT de anon/authenticated, grupo técnico con SELECT/INSERT/UPDATE y sin DELETE. El asesor de seguridad no devolvió avisos. Un ensayo transaccional probó sesiones sin ficha previa y misma fecha, rechazo de profesional ajeno, segunda ficha y reasignación. Finalizó con ROLLBACK; recuentos posteriores cero.
 
 T5 completada. T6 sigue pendiente: ninguna cuenta LOGIN, contraseña o conexión Node–Supabase creada por esta operación. CI de 0D y publicación siguen pendientes.
+
+## T6 — Conexión real verificada, 15 de octubre de 2026
+
+Cuenta psicologia_app creada con aprobación del usuario, miembro de psicologia_backend, sin privilegios administrativos ni bypass RLS. Se verificó límite de dos conexiones. Se resolvió el desbloqueo GPG en modo no interactivo después de la pausa del usuario; no se solicitó contraseña de Supabase en esa ventana.
+
+Credencial nueva generada y transferida cifrada; archivo local ignorado por Git y ACL de usuario. Prueba del backend compilado: conexión y rollback confirmados. La CA oficial se obtuvo de la URL usada por el dashboard de Supabase; TLS verificó cadena y hostname, pg_stat_ssl confirmó TLSv1.3. Intentos DELETE y CREATE rechazados con 42501 desde la cuenta real. Recuentos finales cero en las cuatro tablas.
+
+El sobre cifrado se retiró del comentario de rol. Se eliminaron las copias temporales de contraseña/transferencia. No se versionaron contraseñas, certificados privados o claves privadas. Registro operativo: versiones remotas 20261015141233 y 20261015142029; precaución de conciliación del historial en docs/DATABASE.md. T6 completa. Publicación y validación del nuevo job CI de 0D siguen pendientes.

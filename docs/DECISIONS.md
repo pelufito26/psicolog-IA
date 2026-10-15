@@ -32,3 +32,7 @@ El usuario confirmó el proyecto vrqmpdedckkgxpdleepr como desarrollo con datos 
 ## DEC-005 — Aplicación aprobada de T5
 
 El 15 de octubre de 2026 el usuario aprobó el archivo SQL concreto y su destino de desarrollo vrqmpdedckkgxpdleepr. Se aplicó la migración base_psicologia con versión remota 20261015140453. Se alineó el nombre local con ese historial sin cambiar el SQL. Permisos e integridad comprobados con datos ficticios y rollback. Esta aprobación no incluye cuenta LOGIN, nueva contraseña o configuración de conexión del backend (T6).
+
+## DEC-006 — Cuenta restringida y conexión T6
+
+Aprobada por el usuario el 15 de octubre de 2026, incluida reanudación tras detener el paso de cifrado interactivo. Cuenta psicologia_app exclusivamente de desarrollo, con LOGIN y membresía del grupo existente, sin borrado ni administración. Credencial nueva local excluida de Git; conexión directa verificada mediante CA oficial y TLS 1.3. Ensayos de backend y permisos reales satisfactorios con rollback. No se autoriza publicación por concluir T6 ni se considera autorización clínica productiva.

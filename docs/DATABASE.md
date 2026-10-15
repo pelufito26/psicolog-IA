@@ -2,7 +2,7 @@
 
 ## Estado y destino
 
-Proyecto destinado únicamente a datos ficticios: psicolog-ia, vrqmpdedckkgxpdleepr, PostgreSQL 17.11. En esta entrega se preparó el SQL y se probó en PostgreSQL portátil local 17.10. La migración ya se aplicó con aprobación del usuario. No se crearon credenciales y todavía no se comprobó conexión Node–Supabase.
+Proyecto destinado únicamente a datos ficticios: psicolog-ia, vrqmpdedckkgxpdleepr, PostgreSQL 17.11. En esta entrega se preparó el SQL y se probó en PostgreSQL portátil local 17.10. La migración ya se aplicó con aprobación del usuario. T6 completada: cuenta restringida y conexión real Node–Supabase verificadas con TLS 1.3 y rollback.
 
 Migración: supabase/migrations/20261015140453_base_psicologia.sql. El nombre fue generado por CLI Supabase 2.121.0 con migration new, según su reloj UTC. El archivo se alineó después con la versión efectiva del historial remoto 20261015140453.
 
@@ -32,7 +32,7 @@ CI configura un servicio PostgreSQL 17 desechable con una contraseña ficticia d
 
 La comprobación local se realizó con embedded-postgres 17.10.0-beta.17, instalado fuera del checkout, y Node aislado. Es PostgreSQL real; el paquete de lanzamiento tiene etiqueta beta. Ese auxiliar no es dependencia del producto, no creó servicios/cuentas globales y no se versiona. El entorno de CI usa la imagen PostgreSQL 17.
 
-## Comprobación de aplicación — pendiente de cuenta segura
+## Comprobación de aplicación — verificada con cuenta restringida
 
 Primero compilar con npm run build. npm run db:check ejecuta el backend compilado y carga apps/api/.env si existe. Copiar apps/api/.env.example a .env y completar solo localmente, después de aprobar y configurar una cuenta restringida específica.
 
@@ -51,3 +51,11 @@ Revisar SQL completo y permisos antes de T5. Reinspeccionar el proyecto y aplica
 ## Actualización de estado — T5
 
 Migración aplicada al proyecto de desarrollo con aprobación del usuario. Versión remota 20261015140453, reflejada en el nombre del archivo local; SQL original intacto. Restricciones y permisos verificados mediante ensayos con rollback; tablas vacías. Las menciones de preparación anterior describen el estado previo: ya existe el esquema remoto, pero T6 y la conexión real del backend siguen pendientes.
+
+## Actualización de estado — T6
+
+El usuario aprobó crear la cuenta técnica y retomar el trabajo tras detener el paso interactivo. Se creó psicologia_app, LOGIN miembro de psicologia_backend, sin superusuario, CREATEDB, CREATEROLE, replicación o BYPASSRLS, y con límite de dos conexiones. Credencial aleatoria nueva configurada en apps/api/.env ignorado por Git y restringido al usuario local. El certificado CA oficial se configura únicamente para este cliente, manteniendo rejectUnauthorized:true; origen: https://supabase-downloads.s3-ap-southeast-1.amazonaws.com/prod/ssl/prod-ca-2021.crt, usado por el dashboard oficial de Supabase.
+
+Prueba real: npm run db:check confirmó conexión y rollback; pg_stat_ssl confirmó TLSv1.3. DELETE y CREATE rechazados con 42501 al usar la cuenta real. Tablas vacías después de las pruebas. No se utilizó la contraseña compartida en el chat. Transferencia de credencial cifrada; retirados el sobre remoto y los archivos temporales con la contraseña. Los auxiliares de cifrado no son dependencias del producto.
+
+Se registraron operaciones administrativas remotas con versiones 20261015141233 (crear_cuenta_tecnica_desarrollo) y 20261015142029 (cerrar_transferencia_credencial). Son configuración de acceso por entorno, no SQL de esquema reproducible ni contraseñas para Git. No ejecutar supabase db push contra este proyecto sin conciliar previamente esas entradas administrativas; no modificar su historial a ciegas. Para futuros cambios, mantener revisión de migración y aplicación explícita.
