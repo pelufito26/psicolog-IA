@@ -4,6 +4,13 @@ export interface DatosPaciente {
   fechaNacimiento: string;
   telefono: string;
 }
+export function edad(nacimiento: string, hoy: string): number {
+  return (
+    Number(hoy.slice(0, 4)) -
+    Number(nacimiento.slice(0, 4)) -
+    (hoy.slice(5) < nacimiento.slice(5) ? 1 : 0)
+  );
+}
 const clean = (value: string) => value.trim().replace(/\s+/gu, ' ');
 export function claveNombre(value: string): string {
   return clean(value).normalize('NFD').replace(/\p{M}/gu, '').toLocaleUpperCase('es-UY');

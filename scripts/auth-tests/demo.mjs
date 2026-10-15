@@ -10,6 +10,8 @@ import { AccessService } from '../../apps/api/dist/modules/acceso/service.js';
 import { accessHttp } from '../../apps/api/dist/modules/acceso/routes.js';
 import { createRegistrar } from '../../apps/api/dist/modules/pacientes/application/registrar.js';
 import { createListar } from '../../apps/api/dist/modules/pacientes/application/listar.js';
+import { createPerfil } from '../../apps/api/dist/modules/pacientes/application/perfil.js';
+import { PgPerfilRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-perfil.js';
 import { PgPacienteRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-repository.js';
 import { PgConsultaRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-consulta.js';
 if (process.env.AUTH_TEST_HARNESS !== '1') throw new Error('Harness explícito requerido');
@@ -53,11 +55,16 @@ try {
       fake.mail,
       randomUUID() + randomUUID(),
     );
+  if (process.env.AUTH_TEST_FIXTURE === 'perfil') {
+    const { seedPerfil } = await import('./perfil-fixture.mjs');
+    await seedPerfil(fake, pool);
+  }
   const app = createApp({
     access: accessHttp(service, false, true),
     register: (data, professional) =>
       createRegistrar(new PgPacienteRepository(pool), professional)(data),
     list: (data, professional) => createListar(new PgConsultaRepository(pool), professional)(data),
+    profile: (data, professional) => createPerfil(new PgPerfilRepository(pool), professional)(data),
   });
   const escape = (value) =>
     String(value).replace(

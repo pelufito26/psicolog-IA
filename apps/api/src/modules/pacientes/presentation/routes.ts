@@ -1,7 +1,11 @@
 import express, { type ErrorRequestHandler } from 'express';
 import type { RegistroHandler } from '../application/registrar.js';
 export type PatientHandler = (input: unknown, professional?: string) => ReturnType<RegistroHandler>;
-export function pacienteRoutes(register: PatientHandler, list: PatientHandler) {
+export function pacienteRoutes(
+  register: PatientHandler,
+  list: PatientHandler,
+  profile: PatientHandler,
+) {
   const router = express.Router();
   const route = (path: string, handler: PatientHandler) =>
     router.post(
@@ -30,6 +34,7 @@ export function pacienteRoutes(register: PatientHandler, list: PatientHandler) {
     );
   route('/', register);
   route('/consulta', list);
+  route('/perfil', profile);
   const errors: ErrorRequestHandler = (error, _req, res, _next) => {
     void _next;
     const status =

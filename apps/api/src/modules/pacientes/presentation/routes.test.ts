@@ -11,6 +11,7 @@ beforeEach(async () => {
   server = createApp({
     register: handler,
     list: handler,
+    profile: handler,
     access: { router: express.Router(), guard: (_req, _res, next) => next() },
   }).listen(0, '127.0.0.1');
   await new Promise<void>((resolve) => server.once('listening', resolve));
@@ -112,6 +113,28 @@ test('consulta deshabilitada en producción y sin contexto', async () => {
   ]) {
     const runtime = createRegistrationRuntime(env);
     expect((await runtime.list({ busqueda: '', pagina: 1 })).status).toBe(503);
+    await runtime.close();
+  }
+});
+
+test('perfil reutiliza protecciones HTTP y no-store', async () => {
+  for (const [headers, body, status] of [
+    [{ 'content-type': 'application/json' }, '{}', 201],
+    [{ 'content-type': 'application/json', origin: 'https://ajeno.invalid' }, '{}', 403],
+    [{ 'content-type': 'text/plain' }, '{}', 415],
+    [{ 'content-type': 'application/json' }, '{', 400],
+    [{ 'content-type': 'application/json' }, JSON.stringify({ id: 'a'.repeat(17000) }), 413],
+  ] as const) {
+    const response = await fetch(base + '/api/pacientes/perfil', { method: 'POST', headers, body });
+    expect(response.status).toBe(status);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+  }
+});
+test('perfil no habilita producción o contexto ausente', async () => {
+  for (const env of [{}, { NODE_ENV: 'production' }]) {
+    const runtime = createRegistrationRuntime(env);
+    expect((await runtime.profile({}, '12345678-1234-4234-8234-123456789abc')).status).toBe(503);
+    expect((await runtime.profile({})).status).toBe(503);
     await runtime.close();
   }
 });

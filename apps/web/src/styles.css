@@ -243,6 +243,37 @@ button.secondary {
   padding: 0;
   margin: 0;
 }
+.profile-link {
+  background: none;
+  color: #215c4b;
+  border: 0;
+  padding: 0.2rem 0;
+  text-decoration: underline;
+  text-align: left;
+  overflow-wrap: anywhere;
+  font: inherit;
+}
+.profile-link:hover {
+  background: #e8f0eb;
+  color: #184737;
+}
+.patient-profile {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.2rem;
+}
+.patient-profile dt {
+  font-weight: 600;
+}
+.patient-profile dd {
+  margin: 0.4rem 0 0;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 580px) {
+  .patient-profile {
+    grid-template-columns: 1fr;
+  }
+}
 .access-fields label {
   display: block;
   margin: 1rem 0;
