@@ -24,3 +24,7 @@ Estado: aprobado, 14 de octubre de 2026. El usuario aprobó spec 0B-r1 y despué
 Estado: aprobado, 14 de octubre de 2026. El usuario aprobó spec 0C-r1 y el plan/tareas 0C-plan-r1 y 0C-tasks-r1 mediante «sip», incluido pasar TypeScript de 7.0.2 a 6.0.3 para satisfacer el soporte declarado de typescript-eslint 8.71.2. Se conservan stack, contratos y Node 24.21.0; las verificaciones de 0B se repiten.
 
 Se adoptan ESLint, Prettier, comando check y workflow de lectura para PR/main, con acciones fijadas por SHA. Autorización: instalación, formato inicial, correcciones mínimas y validación local. Sin publicación, merge, despliegue ni protección de ramas. La evidencia remota de GitHub queda pendiente hasta la publicación autorizada. Versiones, reglas y alternativas en specs/002-calidad-ci/plan.md.
+
+## DEC-004 — Preparación de persistencia 0D
+
+El usuario confirmó el proyecto vrqmpdedckkgxpdleepr como desarrollo con datos ficticios, aprobó spec 0D-r1 y luego T1–T4 del plan 0D-plan-r1 mediante «si». Incluye schema privado, restricciones, zona clínica America/Montevideo, pg y CLI fijados, infraestructura de comprobación y pruebas. No autoriza aplicación remota T5, creación de cuenta/credencial T6 ni publicación. La preparación se validó con PostgreSQL portátil 17.10 en dos bases desechables locales; no se instaló un servicio global. El nombre de migración se generó por CLI. Ver specs/003-persistencia/validation.md.

@@ -17,7 +17,7 @@ export default [
   { ...js.configs.recommended, files: ['**/*.{js,mjs,ts,tsx}'] },
   ...tseslint.configs.recommended,
   {
-    files: ['*.{js,mjs}', 'apps/api/**/*.ts', 'apps/web/vite.config.ts'],
+    files: ['*.{js,mjs}', 'scripts/**/*.mjs', 'apps/api/**/*.ts', 'apps/web/vite.config.ts'],
     languageOptions: { globals: globals.node },
   },
   { files: ['apps/web/src/**/*.{ts,tsx}'], languageOptions: { globals: globals.browser } },

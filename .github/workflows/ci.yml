@@ -42,3 +42,39 @@ jobs:
         run: npm test
       - name: Compilación
         run: npm run build
+
+  database:
+    name: Integración PostgreSQL 17
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: solo-pruebas-ficticias
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:solo-pruebas-ficticias@127.0.0.1:5432/postgres
+      TEST_DISPOSABLE_DATABASES: '1'
+    steps:
+      - name: Obtener revisión
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Preparar Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - name: Fijar npm
+        run: npm install --global npm@11.13.0
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Probar migraciones y restricciones
+        run: npm run test:database
