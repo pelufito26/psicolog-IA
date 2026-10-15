@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest';
 import type { Server } from 'node:http';
+import express from 'express';
 import { createApp } from '../../../app.js';
 import { createRegistrationRuntime } from './runtime.js';
 let server: Server;
@@ -7,7 +8,11 @@ let base: string;
 const handler = vi.fn(async () => ({ status: 201, body: { id: 'test', estado: 'registrado' } }));
 beforeEach(async () => {
   handler.mockClear();
-  server = createApp({ register: handler, list: handler }).listen(0, '127.0.0.1');
+  server = createApp({
+    register: handler,
+    list: handler,
+    access: { router: express.Router(), guard: (_req, _res, next) => next() },
+  }).listen(0, '127.0.0.1');
   await new Promise<void>((resolve) => server.once('listening', resolve));
   const address = server.address();
   if (!address || typeof address === 'string') throw new Error();

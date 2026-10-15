@@ -60,6 +60,7 @@ export async function checkDatabase(pool: Pick<Pool, 'connect' | 'end'>): Promis
       'insert into psicologia.profesionales(nombre,apellido,email) values ($1,$2,$3) returning id',
       ['Prueba', 'Ficticia', `check-${crypto.randomUUID()}@example.invalid`],
     );
+    await client.query("select set_config('app.profesional',$1,true)", [professional.rows[0].id]);
     const patient = await client.query<{ id: string }>(
       'insert into psicologia.pacientes(profesional_id,nombre,apellido,fecha_nacimiento,telefono) values ($1,$2,$3,$4,$5) returning id',
       [professional.rows[0].id, 'Paciente', 'Ficticio', '2000-01-01', 'dato-ficticio'],

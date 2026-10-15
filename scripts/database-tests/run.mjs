@@ -1,4 +1,5 @@
 import { testListado } from './listado.mjs';
+import { testAcceso } from './acceso.mjs';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
@@ -293,6 +294,7 @@ try {
         await client.query('RESET ROLE');
       }
       await client.query('SET LOCAL ROLE psicologia_backend');
+      await client.query("select set_config('app.profesional',$1,true)", [p1]);
       await ok(client, 'select * from psicologia.pacientes');
       await ok(client, createPatient, [p1]);
       await rejected(client, 'delete from psicologia.pacientes', '42501');
@@ -321,6 +323,7 @@ try {
       cases++;
       await testPacientes(client, databaseUrl.toString());
       await testListado(client, databaseUrl.toString());
+      await testAcceso(client, databaseUrl.toString());
     } finally {
       await client.end();
       // Solo nombres recién generados en una instancia local explícitamente desechable.

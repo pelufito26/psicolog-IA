@@ -1,3 +1,4 @@
+import { patientFetch } from '../acceso/client';
 export interface PacienteInput {
   nombre: string;
   apellido: string;
@@ -20,7 +21,7 @@ export async function savePaciente(
   data: PacienteInput,
   token?: string,
   signal?: AbortSignal,
-  fetcher: typeof fetch = fetch,
+  fetcher: typeof fetch = patientFetch,
 ): Promise<SaveResult> {
   const controller = new AbortController();
   let rejectCancel!: (error: Error) => void;

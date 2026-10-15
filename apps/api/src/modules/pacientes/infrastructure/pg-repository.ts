@@ -10,6 +10,7 @@ export class PgPacienteRepository implements RegistroRepository {
     try {
       await client.query('BEGIN');
       open = true;
+      await client.query("select set_config('app.profesional',$1,true)", [professional]);
       await client.query('select pg_advisory_xact_lock(hashtextextended($1,0))', [professional]);
       if (
         !(await client.query('select id from psicologia.profesionales where id=$1', [professional]))

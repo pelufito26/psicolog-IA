@@ -12,6 +12,7 @@
     "db:check": "node --env-file-if-exists=.env dist/infrastructure/database/check.js"
   },
   "dependencies": {
+    "@supabase/supabase-js": "2.118.0",
     "express": "5.3.0",
     "pg": "8.23.1"
   },

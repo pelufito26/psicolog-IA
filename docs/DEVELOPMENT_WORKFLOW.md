@@ -76,3 +76,23 @@ npm run check verifica dominio, API y UI. npm run test:database agrega pruebas d
 La pantalla inicial muestra Pacientes. POST /api/pacientes/consulta recibe busqueda y pagina en JSON, con el mismo contexto local, bandera y protección Origin de CU01; las respuestas son no-store. Muestra páginas de 20 con apellido, nombre, edad calculada en Montevideo y teléfono. La búsqueda es parcial y literal en nombre o apellido, sin distinguir acentos/caso; el orden normalizado desempata por nombre e ID. Para nacidos el 29/2, los años no bisiestos cumplen el 1/3. Tras guardar o cancelar un alta, vuelve al listado y consulta de nuevo conservando el filtro. No incluye perfil.
 
 El prototipo lee los candidatos del profesional y compara/pagina en memoria; revisar esta estrategia antes de escalar. No registrar búsquedas/pacientes ni persistirlos en navegador. La consulta vence a los 12 segundos. Evidencia única: specs/005-listar-pacientes/validation.md. Los tests/CI incluyen paginación y separación de profesionales en PostgreSQL desechable; no crean filas en Supabase.
+
+## Acceso en dos pasos — preparación local
+
+El servidor normal ya no usa DEV_PROFESIONAL_ID/DEV_PATIENT_REGISTRATION como bypass. Para pacientes requiere cookie opaca HttpOnly y CSRF, resuelve el profesional desde su sesión y fija contexto RLS por transacción. GET /api/health permanece público. Sin configuración completa, /api/acceso devuelve 503 y pacientes 401; no apuntar el nuevo servidor a una base remota sin preparar y aprobar antes su migración de acceso.
+
+npm run check incluye pruebas del adaptador Supabase con respuestas simuladas. npm run test:database agrega migración, sesiones/códigos, revocación, límites y aislamiento mediante PostgreSQL desechable; Auth y correo siguen simulados en ese ensayo. No se necesitan cuentas reales para CI.
+
+Harness visual (solo prueba local): con PostgreSQL 17 aislado, sin rol psicologia_backend preexistente, iniciar después de npm run build:
+
+```powershell
+$env:AUTH_TEST_HARNESS='1'
+$env:TEST_DATABASE_URL='postgresql://postgres:solo-pruebas-ficticias@127.0.0.1:55433/postgres'
+node scripts/auth-tests/demo.mjs
+```
+
+La URL anterior es exclusivamente el ejemplo de la instancia portátil de esta PC; cada entorno configura su PostgreSQL desechable. El harness crea una base de nombre aleatorio, aplica migraciones y sirve API 127.0.0.1:3001 y buzón 127.0.0.1:3002; requiere puertos libres. Ejecutar dev:web aparte en 5173. Registro admite solo cuentas @example.invalid y contraseñas ficticias. El buzón permite abrir enlaces y leer códigos ficticios; no está montado por server.ts. Banner visible SIMULACIÓN LOCAL. No introducir email o contraseña real. Al terminar por SIGINT/SIGTERM intenta cerrar y retirar exclusivamente su base/rol; ante terminación forzada puede requerir limpieza manual de esa instancia aislada. No usarlo en servidor público o compartido.
+
+La sesión exige código tras contraseña, 5 minutos/5 intentos/60 segundos entre envíos y hasta 5 envíos por cuenta en 15 minutos; origen limitado a 30 operaciones en 15 minutos. La sesión dura hasta 8 horas y vence tras 30 minutos de inactividad; logout la revoca en DB. Código y cookie se almacenan como verificadores/hash, nunca en claro. La recuperación bloquea/revoca antes del cambio; un fallo parcial mantiene la cuenta cerrada hasta repetir correctamente recuperación. Preservar AUTH_SECRET fuera de Git.
+
+T7 pendiente: cuenta de proveedor de correo, destinatarios autorizados, remitente/dominio o remitente de prueba válido, SMTP Supabase para confirmación/recuperación, plantilla con token_hash y propósito y redirección local exacta, claves publicables/servidor fuera de Git, SQL y permisos revisados. El adaptador real usa Supabase y API Resend desde backend. No se han creado cuentas ni enviado emails reales. No ejecutar db push sobre el historial remoto sin conciliar las operaciones administrativas de 0D. Ver specs/006-acceso-profesionales/validation.md.

@@ -1,8 +1,9 @@
 import express, { type ErrorRequestHandler } from 'express';
 import type { RegistroHandler } from '../application/registrar.js';
-export function pacienteRoutes(register: RegistroHandler, list: RegistroHandler) {
+export type PatientHandler = (input: unknown, professional?: string) => ReturnType<RegistroHandler>;
+export function pacienteRoutes(register: PatientHandler, list: PatientHandler) {
   const router = express.Router();
-  const route = (path: string, handler: RegistroHandler) =>
+  const route = (path: string, handler: PatientHandler) =>
     router.post(
       path,
       (req, res, next) => {
@@ -23,7 +24,7 @@ export function pacienteRoutes(register: RegistroHandler, list: RegistroHandler)
       },
       express.json({ limit: '16kb' }),
       async (req, res) => {
-        const result = await handler(req.body);
+        const result = await handler(req.body, res.locals.access?.professional);
         res.status(result.status).json(result.body);
       },
     );
