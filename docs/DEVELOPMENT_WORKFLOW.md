@@ -50,3 +50,7 @@ El workflow Calidad usa Node desde .node-version y npm 11.13.0 en ubuntu-24.04. 
 ## Evidencia
 
 Ver specs/001-base-tecnica/validation.md. Instalación limpia, 13 pruebas, typecheck, build, contrato HTTP del backend compilado y estados de conexión en navegador fueron comprobados con Node 24.21.0.
+
+## Persistencia en preparación (0D)
+
+Ver docs/DATABASE.md para modelo, restricciones y límites. npm run test:database requiere PostgreSQL 17 local desechable y banderas de entorno específicas; no conecta a Supabase. npm run db:check requiere compilar y configurar localmente una cuenta restringida mediante apps/api/.env. No confundir ambos comandos. La migración SQL no se aplicó al proyecto remoto y el nuevo job PostgreSQL de CI sigue pendiente de publicación.
