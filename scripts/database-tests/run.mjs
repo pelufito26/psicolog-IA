@@ -1,3 +1,4 @@
+import { testListado } from './listado.mjs';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
@@ -319,6 +320,7 @@ try {
       );
       cases++;
       await testPacientes(client, databaseUrl.toString());
+      await testListado(client, databaseUrl.toString());
     } finally {
       await client.end();
       // Solo nombres recién generados en una instancia local explícitamente desechable.

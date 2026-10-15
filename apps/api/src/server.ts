@@ -2,9 +2,13 @@ import { createApp } from './app.js';
 import { createRegistrationRuntime } from './modules/pacientes/presentation/runtime.js';
 
 const runtime = createRegistrationRuntime(process.env);
-const server = createApp({ register: runtime.register }).listen(3001, '127.0.0.1', () => {
-  console.log('API local: http://127.0.0.1:3001');
-});
+const server = createApp({ register: runtime.register, list: runtime.list }).listen(
+  3001,
+  '127.0.0.1',
+  () => {
+    console.log('API local: http://127.0.0.1:3001');
+  },
+);
 server.on('error', (error: NodeJS.ErrnoException) => {
   console.error(
     error.code === 'EADDRINUSE'

@@ -42,3 +42,13 @@ Aprobada por el usuario el 15 de octubre de 2026, incluida reanudación tras det
 Aprobado el 15 de octubre de 2026: el usuario pidió una propuesta basada en el resumen, aprobó CU01-r1 mediante «sisi vamo» y aprobó después CU01-plan-r1/CU01-tasks-r1 mediante «si». Se adoptan teléfono de 7–15 dígitos con + opcional, nombres con espacios normalizados, duplicados por nombre/apellido sin acentos/caso y mismo nacimiento dentro del profesional, advertencia y confirmación explícita. No se atribuyen estas precisiones a un caso original no recuperado.
 
 El profesional ficticio proviene del servidor, habilitado expresamente solo en desarrollo. No equivale a autenticación; el rol SQL técnico no aísla identidades reales. Se autorizaron T1–T6 y la demo en vrqmpdedckkgxpdleepr con un profesional y hasta dos pacientes ficticios. No incluye publicación, merge o despliegue. Implementación sin nuevas dependencias ni cambios al esquema; límites HTTP, token y timeout en el plan. Evidencia en specs/004-registrar-paciente/validation.md.
+
+## DEC-008 — Método proporcional y entregas visibles
+
+Aprobado el 15 de octubre de 2026 mediante «dale, vamos asi»: conservar AGENTS.md como entrada y autoridad, las dos puertas de aprobación, arquitectura, aislamiento, datos ficticios y autorizaciones de publicación/migración. Para funciones pequeñas, especificación breve con requisitos/aceptación/límites; plan y tareas sin duplicar requisitos; evidencia única enlazada a pruebas y CI. Ejecutar el lote aprobado sin consultas rutinarias y resolver decisiones técnicas dentro de su alcance. Consultar nuevas reglas de producto, ampliaciones o efectos no autorizados. Cada entrega agrega un comportamiento visible o resuelve un riesgo concreto. Priorizar el recorrido registrar, encontrar y consultar y luego feedback profesional; no agregar infraestructura sin necesidad. Esta decisión autoriza el ajuste del método y preparar CU02; no aprueba sus reglas propuestas ni su implementación.
+
+## DEC-009 — CU02 aprobado
+
+El 15 de octubre de 2026 el usuario aprobó CU02-r1 mediante «Aprobado». Incluye listado del profesional, edad calculada según Montevideo (29/2 cumple el 1/3 en año no bisiesto), orden normalizado por apellido/nombre/ID, búsqueda parcial literal por nombre o apellido, páginas de 20 y regreso al listado después de CU01. Spec en specs/005-listar-pacientes/spec.md. Plan y tareas requieren su segunda aprobación; esta decisión no autoriza implementación ni amplía CU03 o acceso productivo.
+
+Plan CU02-plan-r1 y tareas CU02-tasks-r1 aprobados posteriormente mediante «avancemos». Autorización del lote local T1–T4, incluida demo de lectura con pacientes ficticios existentes; no nuevas escrituras remotas, publicación o despliegue.

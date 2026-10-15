@@ -4,9 +4,13 @@ import { Pool } from 'pg';
 import { PgPacienteRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-repository.js';
 import { createRegistrar } from '../../apps/api/dist/modules/pacientes/application/registrar.js';
 export async function testPacientes(client, url) {
-  const pool = new Pool({ connectionString: url, ssl: false, max: 2 });
-  pool.on('connect', (connection) => {
-    void connection.query('SET ROLE psicologia_backend');
+  const pool = new Pool({
+    connectionString: url,
+    ssl: false,
+    max: 2,
+    onConnect: async (connection) => {
+      await connection.query('SET ROLE psicologia_backend');
+    },
   });
   try {
     const professionals = await client.query(

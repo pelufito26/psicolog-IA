@@ -7,7 +7,7 @@ let base: string;
 const handler = vi.fn(async () => ({ status: 201, body: { id: 'test', estado: 'registrado' } }));
 beforeEach(async () => {
   handler.mockClear();
-  server = createApp({ register: handler }).listen(0, '127.0.0.1');
+  server = createApp({ register: handler, list: handler }).listen(0, '127.0.0.1');
   await new Promise<void>((resolve) => server.once('listening', resolve));
   const address = server.address();
   if (!address || typeof address === 'string') throw new Error();
@@ -77,4 +77,36 @@ test('contexto ausente y producción no conectan ni escriben', async () => {
     await runtime.close();
   }
   expect((await fetch(base + '/api/health')).status).toBe(200);
+});
+
+test('consulta hereda protección HTTP y no permite caché', async () => {
+  for (const [headers, body, status] of [
+    [{ 'content-type': 'application/json' }, '{}', 201],
+    [{ 'content-type': 'application/json', origin: 'https://ajeno.invalid' }, '{}', 403],
+    [{ 'content-type': 'text/plain' }, '{}', 415],
+    [{ 'content-type': 'application/json' }, '{', 400],
+    [{ 'content-type': 'application/json' }, JSON.stringify({ busqueda: 'a'.repeat(17000) }), 413],
+  ] as const) {
+    const response = await fetch(base + '/api/pacientes/consulta', {
+      method: 'POST',
+      headers,
+      body,
+    });
+    expect(response.status).toBe(status);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+  }
+});
+test('consulta deshabilitada en producción y sin contexto', async () => {
+  for (const env of [
+    {},
+    {
+      NODE_ENV: 'production',
+      DEV_PATIENT_REGISTRATION: 'true',
+      DEV_PROFESIONAL_ID: '1addd3b9-c348-48ff-ba6d-6269205dadb1',
+    },
+  ]) {
+    const runtime = createRegistrationRuntime(env);
+    expect((await runtime.list({ busqueda: '', pagina: 1 })).status).toBe(503);
+    await runtime.close();
+  }
 });

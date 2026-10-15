@@ -10,9 +10,11 @@ const labels: Record<keyof PacienteInput, string> = {
 export function PacienteForm({
   save = savePaciente,
   onCancel,
+  onSuccess,
 }: {
   save?: SavePaciente;
   onCancel: () => void;
+  onSuccess?: () => void;
 }) {
   const [values, setValues] = useState<PacienteInput>({ ...empty });
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -58,6 +60,7 @@ export function PacienteForm({
       if (result.kind === 'created') {
         setValues({ ...empty });
         setMessage('Paciente registrado correctamente.');
+        onSuccess?.();
         first.current?.focus();
       } else if (result.kind === 'duplicate') setToken(result.token);
       else if (result.kind === 'invalid') {
