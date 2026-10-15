@@ -35,7 +35,7 @@ El backend compilado queda en apps/api/dist y la interfaz en apps/web/dist. Esas
 
 Los puertos 3001 y 5173 son fijos y locales. Si están ocupados, cerrar únicamente las instancias propias anteriores o identificar quién los utiliza antes de intervenir. No se detienen procesos ajenos automáticamente ni se cambia de puerto silenciosamente.
 
-No hay despliegue, Supabase, autenticación o funciones clínicas.
+Hay persistencia Supabase de desarrollo verificada y registro local de pacientes ficticios (CU01). No hay despliegue ni autenticación productiva. Fichas y sesiones todavía no están implementadas en la interfaz.
 
 ## Calidad local y CI
 
@@ -45,12 +45,28 @@ Para aplicar formato explícitamente: npm run format:write. Prettier usa dos esp
 
 TypeScript se ajustó a 6.0.3 porque la integración de lint elegida no soporta 7. Esto mantiene el stack y los contratos de la aplicación; las verificaciones de 0B se vuelven a ejecutar. Consultar DEC-003 y la evidencia de 0C.
 
-El workflow Calidad usa Node desde .node-version y npm 11.13.0 en ubuntu-24.04. Ejecuta instalación, lint, formato, tipos, pruebas y build en PR hacia main y push en main. Tiene permisos de lectura y límite de 15 minutos; no despliega ni incorpora PR automáticamente. Las protecciones de rama no se configuraron. La ejecución remota no se considera comprobada hasta observarla en GitHub.
+El workflow Calidad usa Node desde .node-version y npm 11.13.0 en ubuntu-24.04. Ejecuta instalación, lint, formato, tipos, pruebas y build en PR hacia main y push en main. Tiene permisos de lectura y límite de 15 minutos; no despliega ni incorpora PR automáticamente. Las protecciones de rama no se configuraron. La ejecución de controles está comprobada en GitHub para main; ver evidencias de 0C y 0D.
 
 ## Evidencia
 
 Ver specs/001-base-tecnica/validation.md. Instalación limpia, 13 pruebas, typecheck, build, contrato HTTP del backend compilado y estados de conexión en navegador fueron comprobados con Node 24.21.0.
 
-## Persistencia en preparación (0D)
+## Persistencia de desarrollo (0D)
 
-Ver docs/DATABASE.md para modelo, restricciones y límites. npm run test:database requiere PostgreSQL 17 local desechable y banderas de entorno específicas; no conecta a Supabase. npm run db:check requiere compilar y configurar localmente una cuenta restringida mediante apps/api/.env. No confundir ambos comandos. La migración SQL no se aplicó al proyecto remoto y el nuevo job PostgreSQL de CI sigue pendiente de publicación.
+Ver docs/DATABASE.md para modelo, restricciones y límites. npm run test:database requiere PostgreSQL 17 local desechable y banderas de entorno específicas; no conecta a Supabase. npm run db:check requiere compilar y configurar localmente una cuenta restringida mediante apps/api/.env. No confundir ambos comandos. La migración SQL se aplicó al proyecto de desarrollo y el job PostgreSQL pasó en GitHub tras el merge de PR #4. La cuenta técnica y el rollback del backend se verificaron; consultar DATABASE.md para límites y precauciones del historial.
+
+## CU01 — Registrar paciente en desarrollo local
+
+Spec, plan, tareas y evidencia: specs/004-registrar-paciente/. Compilar con npm run build. Configurar DATABASE_URL y DATABASE_CA_FILE en apps/api/.env (ignorado por Git), según DATABASE.md. DEV_PROFESIONAL_ID debe ser el UUID de un profesional ficticio existente; DEV_PATIENT_REGISTRATION=true habilita el flujo. En NODE_ENV=production se rechaza. Reiniciar la API tras cambiar variables. npm run dev:api y npm run start:api cargan opcionalmente ese .env desde el workspace del backend.
+
+El seed es una operación remota explícita, separada de tests/CI. Solo con autorización vigente para el proyecto de desarrollo:
+
+```powershell
+node --env-file=apps/api/.env scripts/seed-demo.mjs --project vrqmpdedckkgxpdleepr
+```
+
+Crea o reutiliza exclusivamente el profesional con email profesional-demo@example.invalid y configura el contexto local; no crea pacientes. La demo autorizada de CU01 ya creó dos pacientes ficticios desde el formulario. No repetir escrituras de demo sin revisar el alcance. El seed no concede permisos ni modifica el esquema.
+
+Abrir http://127.0.0.1:5173 con la API en 127.0.0.1:3001. POST /api/pacientes acepta JSON de hasta 16 KiB, cuatro campos personales y confirmacionDuplicado opcional. El profesional viene del servidor. Origin presente debe ser localhost o 127.0.0.1 en puerto 5173; no se habilita CORS abierto. La confirmación vence en diez minutos y queda ligada a datos/profesional/proceso. El navegador espera hasta doce segundos y no reintenta escrituras automáticamente. Un fallo de red puede dejar un resultado incierto: una nueva solicitud sin confirmación vuelve a buscar duplicados.
+
+npm run check verifica dominio, API y UI. npm run test:database agrega pruebas de registro y concurrencia a las comprobaciones del esquema en dos bases desechables; no requiere credenciales de Supabase. No usar este contexto ficticio como autenticación ni exponer el servidor públicamente.

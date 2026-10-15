@@ -3,6 +3,7 @@ import { readFile, readdir } from 'node:fs/promises';
 import { randomUUID } from 'node:crypto';
 import { Client, Pool } from 'pg';
 import { checkDatabase } from '../../apps/api/dist/infrastructure/database/connection.js';
+import { testPacientes } from './pacientes.mjs';
 
 // Solo instancias desechables locales. Nunca usar DATABASE_URL ni un host de Supabase.
 const url = new URL(process.env.TEST_DATABASE_URL ?? '');
@@ -317,6 +318,7 @@ try {
         0,
       );
       cases++;
+      await testPacientes(client, databaseUrl.toString());
     } finally {
       await client.end();
       // Solo nombres recién generados en una instancia local explícitamente desechable.

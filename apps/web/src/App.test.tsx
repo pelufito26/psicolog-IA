@@ -14,15 +14,21 @@ test('muestra identidad, estado pendiente y éxito', async () => {
   render(<App checker={checker} />);
   expect(screen.getByRole('heading', { name: 'PsicologIA' })).toBeTruthy();
   expect(screen.getByText('Base técnica en preparación')).toBeTruthy();
-  expect(screen.getByRole('status').textContent).toBe('Comprobando API…');
+  expect(screen.getByRole('status', { name: 'Estado de la API' }).textContent).toBe(
+    'Comprobando API…',
+  );
   resolve();
-  await waitFor(() => expect(screen.getByRole('status').textContent).toBe('API disponible'));
+  await waitFor(() =>
+    expect(screen.getByRole('status', { name: 'Estado de la API' }).textContent).toBe(
+      'API disponible',
+    ),
+  );
   expect(checker).toHaveBeenCalledTimes(1);
 });
 test('conserva pantalla y comunica el error sin detalles internos', async () => {
   render(<App checker={() => Promise.reject(new Error('detalle interno'))} />);
   await waitFor(() =>
-    expect(screen.getByRole('status').textContent).toBe(
+    expect(screen.getByRole('status', { name: 'Estado de la API' }).textContent).toBe(
       'No se pudo confirmar la disponibilidad de la API',
     ),
   );
@@ -46,5 +52,5 @@ test('aborta al desmontar y tolera respuesta tardía', async () => {
   expect(signal.aborted).toBe(true);
   resolve();
   await Promise.resolve();
-  expect(screen.queryByRole('status')).toBeNull();
+  expect(screen.queryByRole('status', { name: 'Estado de la API' })).toBeNull();
 });
