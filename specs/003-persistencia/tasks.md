@@ -16,7 +16,7 @@ Aprobación: el usuario aprobó T1–T4 mediante «si». No autoriza T5–T6 ni 
 - [x] T4 — Integrar CI desechable y documentación.
   - Depende de T2–T3. Servicio PostgreSQL 17 sin secretos externos, controles 0C y comandos documentados.
   - Hecho cuando para entrega local: configuración revisada y verificaciones disponibles pasan. La ejecución remota de CI espera autorización de publicar.
-- [ ] T5 — Aplicar migración revisada en Supabase de desarrollo.
+- [x] T5 — Aplicar migración revisada en Supabase de desarrollo.
   - Depende de T1–T4 y aprobación del SQL concreto y destino.
   - Reinspeccionar vrqmpdedckkgxpdleepr, mostrar SQL final y aplicar solo cambios aprobados mediante herramienta de migraciones.
   - Hecho cuando: schema e historial coinciden y ensayos reversibles confirman integridad/permisos. Sin resets, eliminaciones o cambios de schemas ajenos.

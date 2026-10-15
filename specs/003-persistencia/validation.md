@@ -21,3 +21,11 @@ El job de integración PostgreSQL de GitHub se preparó localmente; no se ha pub
 ## Resultado final local — 15 de octubre de 2026
 
 96 ensayos SQL aprobados en dos bases PostgreSQL 17.10 vacías, esquema reproducible y rollback confirmado. 19 pruebas de aplicación aprobadas (12 web y 7 API). Lint, formato, tipos y compilación de ambos workspaces satisfactorios. Se verificó el rechazo controlado de db:check sin configuración, sin secretos en la salida. T1–T4 completadas localmente; T5–T6 y CI remoto pendientes.
+
+## T5 — Aplicación remota aprobada y verificada
+
+El usuario aprobó el SQL concreto para vrqmpdedckkgxpdleepr mediante «si». Se aplicó base_psicologia por la herramienta de migraciones: versión real 20261015140453. El archivo originalmente generado por CLI se renombró a esa versión devuelta por Supabase para mantener alineado el historial; su SQL no cambió.
+
+Se verificaron cuatro tablas con RLS, sin SELECT de anon/authenticated, grupo técnico con SELECT/INSERT/UPDATE y sin DELETE. El asesor de seguridad no devolvió avisos. Un ensayo transaccional probó sesiones sin ficha previa y misma fecha, rechazo de profesional ajeno, segunda ficha y reasignación. Finalizó con ROLLBACK; recuentos posteriores cero.
+
+T5 completada. T6 sigue pendiente: ninguna cuenta LOGIN, contraseña o conexión Node–Supabase creada por esta operación. CI de 0D y publicación siguen pendientes.

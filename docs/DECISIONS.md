@@ -28,3 +28,7 @@ Se adoptan ESLint, Prettier, comando check y workflow de lectura para PR/main, c
 ## DEC-004 — Preparación de persistencia 0D
 
 El usuario confirmó el proyecto vrqmpdedckkgxpdleepr como desarrollo con datos ficticios, aprobó spec 0D-r1 y luego T1–T4 del plan 0D-plan-r1 mediante «si». Incluye schema privado, restricciones, zona clínica America/Montevideo, pg y CLI fijados, infraestructura de comprobación y pruebas. No autoriza aplicación remota T5, creación de cuenta/credencial T6 ni publicación. La preparación se validó con PostgreSQL portátil 17.10 en dos bases desechables locales; no se instaló un servicio global. El nombre de migración se generó por CLI. Ver specs/003-persistencia/validation.md.
+
+## DEC-005 — Aplicación aprobada de T5
+
+El 15 de octubre de 2026 el usuario aprobó el archivo SQL concreto y su destino de desarrollo vrqmpdedckkgxpdleepr. Se aplicó la migración base_psicologia con versión remota 20261015140453. Se alineó el nombre local con ese historial sin cambiar el SQL. Permisos e integridad comprobados con datos ficticios y rollback. Esta aprobación no incluye cuenta LOGIN, nueva contraseña o configuración de conexión del backend (T6).

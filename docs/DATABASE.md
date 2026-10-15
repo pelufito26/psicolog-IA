@@ -2,9 +2,9 @@
 
 ## Estado y destino
 
-Proyecto destinado únicamente a datos ficticios: psicolog-ia, vrqmpdedckkgxpdleepr, PostgreSQL 17.11. En esta entrega se preparó el SQL y se probó en PostgreSQL portátil local 17.10. No se aplicó la migración al proyecto, no se crearon credenciales y no se comprobó conexión Node–Supabase.
+Proyecto destinado únicamente a datos ficticios: psicolog-ia, vrqmpdedckkgxpdleepr, PostgreSQL 17.11. En esta entrega se preparó el SQL y se probó en PostgreSQL portátil local 17.10. La migración ya se aplicó con aprobación del usuario. No se crearon credenciales y todavía no se comprobó conexión Node–Supabase.
 
-Migración: supabase/migrations/20261015025410_base_psicologia.sql. El nombre fue generado por CLI Supabase 2.121.0 con migration new, según su reloj UTC. No implica que haya sido aplicada.
+Migración: supabase/migrations/20261015140453_base_psicologia.sql. El nombre fue generado por CLI Supabase 2.121.0 con migration new, según su reloj UTC. El archivo se alineó después con la versión efectiva del historial remoto 20261015140453.
 
 ## Modelo
 
@@ -47,3 +47,7 @@ No existe endpoint clínico ni comprobación de DB desde navegador. GET /api/hea
 ## Próximo paso
 
 Revisar SQL completo y permisos antes de T5. Reinspeccionar el proyecto y aplicar solamente la migración aprobada mediante historial de migraciones. T6 configura la cuenta LOGIN y credencial fuera de los archivos versionados y prueba el backend contra el destino real. No ejecutar resets, cambios destructivos o instrucciones de producción para completar esta etapa.
+
+## Actualización de estado — T5
+
+Migración aplicada al proyecto de desarrollo con aprobación del usuario. Versión remota 20261015140453, reflejada en el nombre del archivo local; SQL original intacto. Restricciones y permisos verificados mediante ensayos con rollback; tablas vacías. Las menciones de preparación anterior describen el estado previo: ya existe el esquema remoto, pero T6 y la conexión real del backend siguen pendientes.
