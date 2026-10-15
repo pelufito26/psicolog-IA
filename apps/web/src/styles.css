@@ -238,3 +238,23 @@ button.secondary {
     padding: 0.6rem 0.15rem;
   }
 }
+.access-fields {
+  border: 0;
+  padding: 0;
+  margin: 0;
+}
+.access-fields label {
+  display: block;
+  margin: 1rem 0;
+  font-weight: 600;
+}
+.access-fields input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #b8c9c2;
+  border-radius: 0.4rem;
+  margin-top: 0.4rem;
+  padding: 0.8rem;
+  font: inherit;
+}

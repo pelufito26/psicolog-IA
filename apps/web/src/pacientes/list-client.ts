@@ -1,3 +1,4 @@
+import { patientFetch } from '../acceso/client';
 export interface PacienteResumen {
   id: string;
   nombre: string;
@@ -12,7 +13,7 @@ export interface Listado {
 }
 export type Consultar = (busqueda: string, pagina: number, signal: AbortSignal) => Promise<Listado>;
 export const consultar: Consultar = async (busqueda, pagina, signal) => {
-  const response = await fetch('/api/pacientes/consulta', {
+  const response = await patientFetch('/api/pacientes/consulta', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ busqueda, pagina }),

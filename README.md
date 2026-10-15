@@ -4,7 +4,7 @@ Aplicación web prevista para profesionales de psicología: pacientes, fichas cl
 
 ## Estado
 
-El prototipo local permite registrar pacientes ficticios y advertir posibles duplicados antes de confirmarlos. Usa una API propia y PostgreSQL en Supabase de desarrollo. Todavía no hay autenticación productiva, fichas ni sesiones en la interfaz; utilizar exclusivamente datos ficticios.
+El prototipo incluye listado y registro de pacientes ficticios y preparación local de acceso con contraseña y código por correo. El flujo de acceso está verificado con identidad/correo simulados y PostgreSQL real desechable; la prueba integrada con Supabase Auth y email real sigue pendiente. El servidor normal deniega pacientes sin configuración y sesión completas. No hay uso clínico productivo, fichas o sesiones en la interfaz.
 
 ## Documentación
 
@@ -22,5 +22,6 @@ El prototipo local permite registrar pacientes ficticios y advertir posibles dup
 - [Preparación 0E](docs/REVISION_0E.md).
 - [Validación de CU01](specs/004-registrar-paciente/validation.md): registro de pacientes, pruebas y demo.
 - [Validación de CU02](specs/005-listar-pacientes/validation.md): listado, búsqueda, edad y paginación del profesional.
+- [Acceso en dos pasos](specs/006-acceso-profesionales/validation.md): alcance local, matriz de seguridad y pendientes de email real.
 
 Los documentos adicionales y las especificaciones se crearán cuando haya contenido concreto. Antes de implementar cada cambio se aprobarán su especificación y su plan con tareas.

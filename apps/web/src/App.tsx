@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { checkHealth } from './health';
 import { Pacientes } from './pacientes/Pacientes';
+import { Acceso } from './acceso/Acceso';
 
 const defaultChecker = (signal?: AbortSignal) => checkHealth({ signal });
 const messages = {
@@ -32,7 +33,9 @@ export function App({
       <p className="eyebrow">ESPACIO DE DESARROLLO</p>
       <h1>PsicologIA</h1>
       <p className="intro">Base técnica en preparación</p>
-      <Pacientes />
+      <Acceso>
+        <Pacientes />
+      </Acceso>
       <section className="status-card" aria-labelledby="connection-title">
         <h2 id="connection-title">Conexión local</h2>
         <p role="status" aria-label="Estado de la API" aria-live="polite" className={state}>

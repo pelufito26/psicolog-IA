@@ -1,14 +1,16 @@
 import { createApp } from './app.js';
 import { createRegistrationRuntime } from './modules/pacientes/presentation/runtime.js';
+import { createAccessRuntime } from './modules/acceso/runtime.js';
 
 const runtime = createRegistrationRuntime(process.env);
-const server = createApp({ register: runtime.register, list: runtime.list }).listen(
-  3001,
-  '127.0.0.1',
-  () => {
-    console.log('API local: http://127.0.0.1:3001');
-  },
-);
+const access = createAccessRuntime(process.env);
+const server = createApp({
+  register: runtime.register,
+  list: runtime.list,
+  access: access.http,
+}).listen(3001, '127.0.0.1', () => {
+  console.log('API local: http://127.0.0.1:3001');
+});
 server.on('error', (error: NodeJS.ErrnoException) => {
   console.error(
     error.code === 'EADDRINUSE'
@@ -21,6 +23,7 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, () =>
     server.close(() => {
       void runtime.close();
+      void access.close();
     }),
   );
 }
