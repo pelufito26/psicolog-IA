@@ -7,6 +7,7 @@ const access = createAccessRuntime(process.env);
 const server = createApp({
   register: runtime.register,
   list: runtime.list,
+  profile: runtime.profile,
   access: access.http,
 }).listen(3001, '127.0.0.1', () => {
   console.log('API local: http://127.0.0.1:3001');

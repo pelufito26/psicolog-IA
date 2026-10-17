@@ -7,6 +7,8 @@ import { accessHttp } from '../../apps/api/dist/modules/acceso/routes.js';
 import { createApp } from '../../apps/api/dist/app.js';
 import { createRegistrar } from '../../apps/api/dist/modules/pacientes/application/registrar.js';
 import { createListar } from '../../apps/api/dist/modules/pacientes/application/listar.js';
+import { createPerfil } from '../../apps/api/dist/modules/pacientes/application/perfil.js';
+import { PgPerfilRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-perfil.js';
 import { PgPacienteRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-repository.js';
 import { PgConsultaRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-consulta.js';
 import { fakeIdentity } from '../auth-tests/fakes.mjs';
@@ -117,6 +119,8 @@ export async function testAcceso(admin, url) {
         createRegistrar(new PgPacienteRepository(pool), professional)(data),
       list: (data, professional) =>
         createListar(new PgConsultaRepository(pool), professional)(data),
+      profile: (data, professional) =>
+        createPerfil(new PgPerfilRepository(pool), professional)(data),
     });
     server = app.listen(0, '127.0.0.1');
     await new Promise((resolve) => server.once('listening', resolve));
@@ -148,6 +152,12 @@ export async function testAcceso(admin, url) {
       return { response, body };
     }
     await request(one, '/api/acceso/estado');
+    const profileInput = { id: randomUUID() };
+    assert.equal(
+      (await request(one, '/api/pacientes/perfil', profileInput, { authorization: 'Bearer falso' }))
+        .response.status,
+      401,
+    );
     assert.equal(
       (
         await request(
@@ -191,6 +201,7 @@ export async function testAcceso(admin, url) {
       401,
     );
     const codeOne = fake.outbox.at(-1).code;
+    assert.equal((await request(one, '/api/pacientes/perfil', profileInput)).response.status, 401);
     assert.equal(
       (await request(one, '/api/acceso/verificar', { codigo: codeOne })).body.estado,
       'autenticado',
@@ -201,10 +212,41 @@ export async function testAcceso(admin, url) {
       fechaNacimiento: '2000-01-01',
       telefono: '0000000',
     };
-    assert.equal((await request(one, '/api/pacientes', patient)).response.status, 201);
+    const createdPatient = await request(one, '/api/pacientes', patient);
+    assert.equal(createdPatient.response.status, 201);
+    const patientId = createdPatient.body.id;
+    assert.equal(
+      (await request(one, '/api/pacientes/perfil', { id: patientId })).body.nombre,
+      patient.nombre,
+    );
+    assert.equal(
+      (await request(one, '/api/pacientes/perfil', { id: 'inválido' })).response.status,
+      400,
+    );
+    assert.equal(
+      (await request(one, '/api/pacientes/perfil', { id: patientId }, { 'x-csrf-token': 'falso' }))
+        .response.status,
+      403,
+    );
+    assert.equal(
+      (
+        await request(
+          one,
+          '/api/pacientes/perfil',
+          { id: patientId },
+          { origin: 'https://ajeno.invalid' },
+        )
+      ).response.status,
+      403,
+    );
     await request(two, '/api/acceso/estado');
     await request(two, '/api/acceso/ingresar', { email: email2, password: registration.password });
     await request(two, '/api/acceso/verificar', { codigo: fake.outbox.at(-1).code });
+    const foreignProfile = await request(two, '/api/pacientes/perfil', { id: patientId });
+    const missingProfile = await request(two, '/api/pacientes/perfil', profileInput);
+    assert.equal(foreignProfile.response.status, 404);
+    assert.equal(missingProfile.response.status, 404);
+    assert.deepEqual(foreignProfile.body, missingProfile.body);
     assert.equal(
       (
         await request(two, '/api/pacientes/consulta', {
@@ -235,6 +277,15 @@ export async function testAcceso(admin, url) {
     );
     const saved = { ...one };
     await request(one, '/api/acceso/salir', {});
+    assert.equal(
+      (await request(saved, '/api/pacientes/perfil', { id: patientId })).response.status,
+      401,
+    );
+    now += 1800001;
+    assert.equal(
+      (await request(two, '/api/pacientes/perfil', { id: patientId })).response.status,
+      401,
+    );
     assert.equal(
       (await request(saved, '/api/pacientes/consulta', { busqueda: '', pagina: 1 })).response
         .status,

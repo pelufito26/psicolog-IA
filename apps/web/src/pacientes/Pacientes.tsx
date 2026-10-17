@@ -2,8 +2,19 @@ import { useEffect, useState } from 'react';
 import { PacienteForm } from './PacienteForm';
 import { consultar, type Consultar, type Listado } from './list-client';
 import type { SavePaciente } from './client';
-export function Pacientes({ load = consultar, save }: { load?: Consultar; save?: SavePaciente }) {
+import { PerfilPaciente } from './PerfilPaciente';
+import type { ConsultarPerfil } from './profile-client';
+export function Pacientes({
+  load = consultar,
+  save,
+  profile,
+}: {
+  load?: Consultar;
+  save?: SavePaciente;
+  profile?: ConsultarPerfil;
+}) {
   const [form, setForm] = useState(false);
+  const [selected, setSelected] = useState<string | null>(null);
   const [draft, setDraft] = useState('');
   const [request, setRequest] = useState({ busqueda: '', pagina: 1, revision: 0 });
   const [result, setResult] = useState<{
@@ -13,7 +24,7 @@ export function Pacientes({ load = consultar, save }: { load?: Consultar; save?:
   }>();
   const [notice, setNotice] = useState('');
   useEffect(() => {
-    if (form) return;
+    if (form || selected) return;
     const controller = new AbortController();
     let active = true;
     load(request.busqueda, request.pagina, controller.signal).then(
@@ -28,12 +39,24 @@ export function Pacientes({ load = consultar, save }: { load?: Consultar; save?:
       active = false;
       controller.abort();
     };
-  }, [load, request, form]);
+  }, [load, request, form, selected]);
   function refresh(message = '') {
     setNotice(message);
     setForm(false);
     setRequest((r) => ({ ...r, pagina: 1, revision: r.revision + 1 }));
   }
+  if (selected)
+    return (
+      <PerfilPaciente
+        key={selected}
+        id={selected}
+        load={profile}
+        onBack={() => {
+          setSelected(null);
+          setRequest((r) => ({ ...r, revision: r.revision + 1 }));
+        }}
+      />
+    );
   if (form)
     return (
       <PacienteForm
@@ -126,7 +149,18 @@ export function Pacientes({ load = consultar, save }: { load?: Consultar; save?:
                   {data.pacientes.map((p) => (
                     <tr key={p.id}>
                       <td>{p.apellido}</td>
-                      <td>{p.nombre}</td>
+                      <td>
+                        <button
+                          className="profile-link"
+                          aria-label={`Ver perfil de ${p.nombre} ${p.apellido}`}
+                          onClick={() => {
+                            setNotice('');
+                            setSelected(p.id);
+                          }}
+                        >
+                          {p.nombre}
+                        </button>
+                      </td>
                       <td>{p.edad} años</td>
                       <td>{p.telefono}</td>
                     </tr>

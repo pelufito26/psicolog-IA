@@ -1,4 +1,5 @@
-import { claveNombre, hoyMontevideo } from '../domain/paciente.js';
+import { claveNombre, hoyMontevideo, edad } from '../domain/paciente.js';
+export { edad } from '../domain/paciente.js';
 import type { RegistroHandler } from './registrar.js';
 export interface PacienteLeido {
   id: string;
@@ -9,13 +10,6 @@ export interface PacienteLeido {
 }
 export interface ConsultaRepository {
   read(professional: string): Promise<PacienteLeido[] | null>;
-}
-export function edad(nacimiento: string, hoy: string): number {
-  return (
-    Number(hoy.slice(0, 4)) -
-    Number(nacimiento.slice(0, 4)) -
-    (hoy.slice(5) < nacimiento.slice(5) ? 1 : 0)
-  );
 }
 const compare = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 export function createListar(

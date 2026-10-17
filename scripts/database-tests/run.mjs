@@ -1,4 +1,5 @@
 import { testListado } from './listado.mjs';
+import { testPerfil } from './perfil.mjs';
 import { testAcceso } from './acceso.mjs';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
@@ -323,6 +324,7 @@ try {
       cases++;
       await testPacientes(client, databaseUrl.toString());
       await testListado(client, databaseUrl.toString());
+      await testPerfil(client, databaseUrl.toString());
       await testAcceso(client, databaseUrl.toString());
     } finally {
       await client.end();
