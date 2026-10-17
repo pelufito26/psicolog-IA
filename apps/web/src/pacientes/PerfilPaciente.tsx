@@ -5,16 +5,22 @@ import {
   type ConsultarPerfil,
   type Perfil,
 } from './profile-client';
+import { EditarPaciente } from './EditarPaciente';
+import type { Editor } from './edit-client';
 export function PerfilPaciente({
   id,
   load = consultarPerfil,
   onBack,
+  editor,
 }: {
   id: string;
   load?: ConsultarPerfil;
   onBack: () => void;
+  editor?: Editor;
 }) {
   const [revision, setRevision] = useState(0);
+  const [editing, setEditing] = useState(false);
+  const [notice, setNotice] = useState('');
   const [result, setResult] = useState<{
     id: string;
     revision: number;
@@ -24,8 +30,9 @@ export function PerfilPaciente({
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     heading.current?.focus();
-  }, [id]);
+  }, [id, editing]);
   useEffect(() => {
+    if (editing) return;
     const controller = new AbortController();
     let active = true;
     load(id, controller.signal).then(
@@ -45,9 +52,23 @@ export function PerfilPaciente({
       active = false;
       controller.abort();
     };
-  }, [id, load, revision]);
+  }, [id, load, revision, editing]);
   const current = result?.id === id && result.revision === revision ? result : undefined;
   const data = current?.data;
+  if (editing)
+    return (
+      <EditarPaciente
+        key={id}
+        id={id}
+        load={editor?.load}
+        save={editor?.save}
+        onClose={(saved) => {
+          setEditing(false);
+          setRevision((value) => value + 1);
+          setNotice(saved ? 'Datos del paciente actualizados.' : '');
+        }}
+      />
+    );
   return (
     <section className="patient-card" aria-labelledby="profile-title">
       <h2 id="profile-title" ref={heading} tabIndex={-1}>
@@ -56,6 +77,17 @@ export function PerfilPaciente({
       <button className="secondary" onClick={onBack}>
         Volver al listado
       </button>
+      {notice && <p role="status">{notice}</p>}
+      {data && (
+        <button
+          onClick={() => {
+            setNotice('');
+            setEditing(true);
+          }}
+        >
+          Editar datos
+        </button>
+      )}
       {!current && <p role="status">Cargando perfil…</p>}
       {current?.error === 'missing' && <p role="status">El paciente no está disponible.</p>}
       {current?.error === 'temporary' && (
