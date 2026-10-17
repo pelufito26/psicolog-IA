@@ -4,14 +4,17 @@ import { consultar, type Consultar, type Listado } from './list-client';
 import type { SavePaciente } from './client';
 import { PerfilPaciente } from './PerfilPaciente';
 import type { ConsultarPerfil } from './profile-client';
+import type { Editor } from './edit-client';
 export function Pacientes({
   load = consultar,
   save,
   profile,
+  editor,
 }: {
   load?: Consultar;
   save?: SavePaciente;
   profile?: ConsultarPerfil;
+  editor?: Editor;
 }) {
   const [form, setForm] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
@@ -51,6 +54,7 @@ export function Pacientes({
         key={selected}
         id={selected}
         load={profile}
+        editor={editor}
         onBack={() => {
           setSelected(null);
           setRequest((r) => ({ ...r, revision: r.revision + 1 }));

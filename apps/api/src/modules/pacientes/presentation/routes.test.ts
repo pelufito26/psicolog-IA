@@ -12,6 +12,8 @@ beforeEach(async () => {
     register: handler,
     list: handler,
     profile: handler,
+    editLoad: handler,
+    editSave: handler,
     access: { router: express.Router(), guard: (_req, _res, next) => next() },
   }).listen(0, '127.0.0.1');
   await new Promise<void>((resolve) => server.once('listening', resolve));
@@ -137,4 +139,34 @@ test('perfil no habilita producción o contexto ausente', async () => {
     expect((await runtime.profile({})).status).toBe(503);
     await runtime.close();
   }
+});
+
+test.each(['/edicion', '/actualizar'])('edición hereda límites y no-store: %s', async (path) => {
+  for (const [headers, body, status] of [
+    [{ 'content-type': 'application/json' }, '{}', 201],
+    [{ 'content-type': 'application/json', origin: 'https://ajeno.invalid' }, '{}', 403],
+    [{ 'content-type': 'text/plain' }, '{}', 415],
+    [{ 'content-type': 'application/json' }, '{', 400],
+    [{ 'content-type': 'application/json' }, JSON.stringify({ nombre: 'x'.repeat(17000) }), 413],
+  ] as const) {
+    const response = await fetch(base + '/api/pacientes' + path, { method: 'POST', headers, body });
+    expect(response.status).toBe(status);
+    expect(response.headers.get('cache-control')).toBe('no-store');
+  }
+});
+test('edición sin contexto o producción falla cerrada', async () => {
+  for (const env of [{}, { NODE_ENV: 'production' }]) {
+    const runtime = createRegistrationRuntime(env);
+    expect((await runtime.editLoad({})).status).toBe(503);
+    expect((await runtime.editSave({}, '12345678-1234-4234-8234-123456789abc')).status).toBe(503);
+    await runtime.close();
+  }
+});
+
+test('configuración de base ausente conserva errores públicos de edición', async () => {
+  const runtime = createRegistrationRuntime({}),
+    professional = '12345678-1234-4234-8234-123456789abc';
+  expect((await runtime.editLoad({}, professional)).body.codigo).toBe('EDICION_NO_DISPONIBLE');
+  expect((await runtime.editSave({}, professional)).body.codigo).toBe('GUARDADO_NO_CONFIRMADO');
+  await runtime.close();
 });

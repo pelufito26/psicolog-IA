@@ -8,6 +8,8 @@ const server = createApp({
   register: runtime.register,
   list: runtime.list,
   profile: runtime.profile,
+  editLoad: runtime.editLoad,
+  editSave: runtime.editSave,
   access: access.http,
 }).listen(3001, '127.0.0.1', () => {
   console.log('API local: http://127.0.0.1:3001');

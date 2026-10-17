@@ -1,7 +1,7 @@
 // Explicit harness: fictitious identities and email only, isolated disposable DB.
 import { Client, Pool } from 'pg';
 import { readFile, readdir } from 'node:fs/promises';
-import { randomUUID } from 'node:crypto';
+import { randomUUID, randomBytes } from 'node:crypto';
 import { createServer } from 'node:http';
 import { fakeIdentity } from './fakes.mjs';
 import { createApp } from '../../apps/api/dist/app.js';
@@ -12,6 +12,8 @@ import { createRegistrar } from '../../apps/api/dist/modules/pacientes/applicati
 import { createListar } from '../../apps/api/dist/modules/pacientes/application/listar.js';
 import { createPerfil } from '../../apps/api/dist/modules/pacientes/application/perfil.js';
 import { PgPerfilRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-perfil.js';
+import { createEditar } from '../../apps/api/dist/modules/pacientes/application/editar.js';
+import { PgEdicionRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-edicion.js';
 import { PgPacienteRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-repository.js';
 import { PgConsultaRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-consulta.js';
 if (process.env.AUTH_TEST_HARNESS !== '1') throw new Error('Harness explícito requerido');
@@ -59,12 +61,17 @@ try {
     const { seedPerfil } = await import('./perfil-fixture.mjs');
     await seedPerfil(fake, pool);
   }
+  const editSecret = randomBytes(32);
+  const edit = (professional) =>
+    createEditar(new PgEdicionRepository(pool), professional, { secret: editSecret });
   const app = createApp({
     access: accessHttp(service, false, true),
     register: (data, professional) =>
-      createRegistrar(new PgPacienteRepository(pool), professional)(data),
+      createRegistrar(new PgPacienteRepository(pool), professional, { secret: editSecret })(data),
     list: (data, professional) => createListar(new PgConsultaRepository(pool), professional)(data),
     profile: (data, professional) => createPerfil(new PgPerfilRepository(pool), professional)(data),
+    editLoad: (data, professional) => edit(professional).load(data),
+    editSave: (data, professional) => edit(professional).save(data),
   });
   const escape = (value) =>
     String(value).replace(

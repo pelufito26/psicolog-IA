@@ -1,0 +1,34 @@
+# CU04 — Modificar datos personales de paciente
+
+Revisión CU04-r1 · 17 de octubre de 2026 · Aprobada por el usuario mediante «si».
+
+Origen: resumen de CU04, modelo y reglas de docs/PROJECT_CONTEXT.md; decisiones aprobadas de CU01, CU02, CU03 y acceso de profesionales. No se recuperó el caso original completo. Las precisiones de edición, duplicados y concurrencia siguientes son propuestas explícitas para validar.
+
+## Resultado y alcance
+
+Desde el perfil de un paciente propio, el profesional puede corregir nombre, apellido, fecha de nacimiento y teléfono. Al guardar vuelve al perfil actualizado; al cancelar vuelve sin modificar la base. El regreso posterior al listado conserva el contexto de CU03 y actualiza la consulta para reflejar cambios de nombre, orden o coincidencia con el filtro.
+
+Solo desarrollo local con pacientes ficticios y el harness de acceso/correo simulado existente. No incluye reasignación de profesional, eliminación, cambios de ficha o sesiones, historial de versiones, datos reales, nuevas dependencias o esquema, migraciones/configuración remotas, correos ni publicación. AUTH T7 continúa por separado.
+
+## Requisitos y aceptación
+
+| ID  | Requisito verificable                                                                                                                                                                                                                                                                                                                                                                           |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1  | El perfil ofrece Editar datos. El formulario carga los datos actuales del paciente autorizado y distingue carga, paciente no disponible y error temporal con reintento. No permite guardar antes de completar la carga.                                                                                                                                                                         |
+| R2  | Solo se editan nombre, apellido, fecha de nacimiento y teléfono. ID, profesional responsable, creación y datos clínicos no son campos editables; cualquier intento de cambiarlos desde el cliente se rechaza en backend.                                                                                                                                                                        |
+| R3  | Reutilizar las reglas de CU01: cuatro campos obligatorios; nombres con espacios normalizados; nacimiento de calendario válido, no futuro según America/Montevideo; teléfono de 7–15 dígitos, con + inicial opcional y separadores admitidos. Mostrar errores por campo sin perder los valores ingresados. Edad sigue derivada y se recalcula al consultar.                                      |
+| R4  | Antes de guardar, buscar posibles duplicados dentro del mismo profesional por nombre/apellido normalizados y nacimiento, excluyendo el propio paciente. Advertir sin escribir y ofrecer volver a editar o confirmar explícitamente. La confirmación pertenece al paciente y los valores propuestos; cambiar esos valores requiere una nueva comprobación. No revelar datos de pacientes ajenos. |
+| R5  | Actualizar únicamente el paciente de la sesión comprobada, con validación y comprobación de propiedad también al guardar/confirmar. Paciente inexistente y ajeno producen la misma respuesta de no disponible, sin confirmar existencia ni modificar filas. Sin sesión completa vigente se rechaza toda lectura/escritura.                                                                      |
+| R6  | Propuesta de concurrencia: si el paciente cambió desde que se cargó el formulario, no sobrescribir silenciosamente. Rechazar el guardado sin cambios parciales, conservar el borrador y avisar que debe revisar la versión actual. La recarga que reemplaza el borrador requiere una acción explícita; no prometer fusión o historial. Aplicar el mismo control tras confirmar duplicado.       |
+| R7  | Guardar datos válidos se realiza de forma atómica, conserva ID/profesional/fecha de creación y actualiza automáticamente la fecha de última modificación. No altera ficha ni sesiones asociadas ni crea pacientes nuevos. Evitar envíos simultáneos desde el formulario; ante fallo no afirmar que se guardó ni reintentar automáticamente una escritura.                                       |
+| R8  | Tras guardar, volver al perfil con confirmación y consultar los datos actuales. Cancelar no escribe y descarta el borrador. Al volver después al listado conservar filtro aplicado, texto en edición y página; si el paciente ya no coincide con el filtro o cambió de página, mantener visible el filtro sin afirmar que desapareció de la base.                                               |
+| R9  | Logout, vencimiento o cambio de cuenta desmontan formulario/perfil, descartan borrador y confirmación y evitan mostrar respuestas tardías. Conservar protección de sesión/CSRF/Origin, respuestas no-store y credenciales solo en backend. No persistir datos, borradores o confirmaciones en URL, logs ni almacenamiento del navegador.                                                        |
+| R10 | Formulario y advertencias operables por teclado, etiquetas claras y errores asociados a los campos. Mantener legibilidad en móvil/escritorio, acciones Guardar cambios y Cancelar, y estados de carga/guardado/error distinguibles.                                                                                                                                                             |
+
+## Verificación proporcional
+
+Pruebas de reglas reutilizadas y aplicación; PostgreSQL local desechable con dos profesionales para modificación propia, ajena/inexistente, duplicado excluyendo al propio paciente, confirmación y conflicto concurrente. Comprobar preservación de identidad/propietario/creación y relaciones clínicas con datos ficticios, así como rollback ante fallo. HTTP: sesión ausente/incompleta/expirada, CSRF/origen, campos no permitidos y confirmación reutilizada o aplicada a otros datos/paciente.
+
+UI: carga del formulario, errores sin perder borrador, duplicado y confirmación, conflicto/recarga explícita, cancelar sin escritura, guardar y perfil actualizado, regreso con búsqueda/página y limpieza de respuestas pendientes al cambiar acceso. Mantener pruebas de CU01–CU03 y AUTH, controles de calidad y demo ficticia en escritorio/móvil. Registrar evidencia y límites sin atribuir el resultado a correo/Auth reales.
+
+CU04-r1 y plan/tareas CU04-plan-r1/CU04-tasks-r1 aprobados. Evidencia de implementación en validation.md.

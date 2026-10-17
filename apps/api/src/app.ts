@@ -5,6 +5,8 @@ export function createApp(
     register?: PatientHandler;
     list?: PatientHandler;
     profile?: PatientHandler;
+    editLoad?: PatientHandler;
+    editSave?: PatientHandler;
     access?: { router: express.Router; guard: RequestHandler };
   } = {},
 ) {
@@ -28,6 +30,10 @@ export function createApp(
       options.list ??
         (async () => ({ status: 503, body: { codigo: 'DESARROLLO_NO_CONFIGURADO' } })),
       options.profile ?? (async () => ({ status: 503, body: { codigo: 'PERFIL_NO_DISPONIBLE' } })),
+      options.editLoad ??
+        (async () => ({ status: 503, body: { codigo: 'EDICION_NO_DISPONIBLE' } })),
+      options.editSave ??
+        (async () => ({ status: 503, body: { codigo: 'GUARDADO_NO_CONFIRMADO' } })),
     ),
   );
   return app;

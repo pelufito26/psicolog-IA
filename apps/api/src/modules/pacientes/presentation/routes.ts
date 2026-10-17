@@ -5,6 +5,8 @@ export function pacienteRoutes(
   register: PatientHandler,
   list: PatientHandler,
   profile: PatientHandler,
+  editLoad: PatientHandler,
+  editSave: PatientHandler,
 ) {
   const router = express.Router();
   const route = (path: string, handler: PatientHandler) =>
@@ -35,6 +37,8 @@ export function pacienteRoutes(
   route('/', register);
   route('/consulta', list);
   route('/perfil', profile);
+  route('/edicion', editLoad);
+  route('/actualizar', editSave);
   const errors: ErrorRequestHandler = (error, _req, res, _next) => {
     void _next;
     const status =
