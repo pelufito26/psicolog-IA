@@ -6,18 +6,21 @@ import { PerfilPaciente } from './PerfilPaciente';
 import type { ConsultarPerfil } from './profile-client';
 import type { Editor } from './edit-client';
 import type { FichaAPI } from '../fichas-clinicas/client';
+import type { ConsultarFicha } from '../fichas-clinicas/consulta-client';
 export function Pacientes({
   load = consultar,
   save,
   profile,
   editor,
   fichas,
+  fichaLoad,
 }: {
   load?: Consultar;
   save?: SavePaciente;
   profile?: ConsultarPerfil;
   editor?: Editor;
   fichas?: FichaAPI;
+  fichaLoad?: ConsultarFicha;
 }) {
   const [form, setForm] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
@@ -59,6 +62,7 @@ export function Pacientes({
         load={profile}
         editor={editor}
         fichas={fichas}
+        fichaLoad={fichaLoad}
         onBack={() => {
           setSelected(null);
           setRequest((r) => ({ ...r, revision: r.revision + 1 }));

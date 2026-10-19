@@ -1,16 +1,17 @@
 import type { Pool, PoolClient } from 'pg';
-import type { FichaRepository } from '../application/ficha.js';
+import type { FichaRepository, ConsultaFicha } from '../application/ficha.js';
 import type { DatosFicha } from '../domain/ficha.js';
 export class PgFichaRepository implements FichaRepository {
   constructor(private readonly pool: Pool) {}
   private async transaction<T>(
     professional: string,
     run: (client: PoolClient) => Promise<{ value: T; commit: boolean }>,
+    readOnly = false,
   ): Promise<T> {
     const client = await this.pool.connect();
     let discard = false;
     try {
-      await client.query('BEGIN');
+      await client.query(readOnly ? 'BEGIN READ ONLY' : 'BEGIN');
       await client.query("select set_config('app.profesional',$1,true)", [professional]);
       const result = await run(client);
       await client.query(result.commit ? 'COMMIT' : 'ROLLBACK');
@@ -25,6 +26,64 @@ export class PgFichaRepository implements FichaRepository {
     } finally {
       client.release(discard);
     }
+  }
+  read(professional: string, patient: string): Promise<ConsultaFicha | null> {
+    return this.transaction<ConsultaFicha | null>(
+      professional,
+      async (c) => {
+        const result = await c.query<{
+          pacienteId: string;
+          nombre: string;
+          apellido: string;
+          id: string | null;
+          motivoConsulta: string;
+          antecedentesPersonales: string | null;
+          antecedentesFamiliares: string | null;
+          medicacion: string | null;
+          evaluacionClinica: string | null;
+          observacionesGenerales: string | null;
+          fechaCreacion: Date;
+          fechaUltimaModificacion: Date;
+        }>(
+          `select p.id as "pacienteId", p.nombre, p.apellido, f.id,
+        f.motivo_consulta as "motivoConsulta", f.antecedentes_personales as "antecedentesPersonales",
+        f.antecedentes_familiares as "antecedentesFamiliares", f.medicacion,
+        f.evaluacion_clinica as "evaluacionClinica", f.observaciones_generales as "observacionesGenerales",
+        f.fecha_creacion as "fechaCreacion", f.fecha_ultima_modificacion as "fechaUltimaModificacion"
+        from psicologia.pacientes p left join psicologia.fichas_clinicas f on f.paciente_id=p.id
+        where p.id=$1 and p.profesional_id=$2`,
+          [patient, professional],
+        );
+        const row = result.rows[0];
+        if (!row) return { value: null, commit: true };
+        const {
+          pacienteId,
+          nombre,
+          apellido,
+          id,
+          fechaCreacion,
+          fechaUltimaModificacion,
+          ...fields
+        } = row;
+        return {
+          value: {
+            pacienteId,
+            nombre,
+            apellido,
+            ficha: id
+              ? {
+                  id,
+                  ...fields,
+                  fechaCreacion: fechaCreacion.toISOString(),
+                  fechaUltimaModificacion: fechaUltimaModificacion.toISOString(),
+                }
+              : null,
+          },
+          commit: true,
+        };
+      },
+      true,
+    );
   }
   state(professional: string, patient: string): Promise<boolean | null> {
     return this.transaction(professional, async (c) => {

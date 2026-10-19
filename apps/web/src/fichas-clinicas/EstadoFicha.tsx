@@ -4,10 +4,12 @@ export function EstadoFicha({
   pacienteId,
   api = fichaAPI,
   onCreate,
+  onRead,
 }: {
   pacienteId: string;
   api?: FichaAPI;
   onCreate: () => void;
+  onRead?: () => void;
 }) {
   const [revision, setRevision] = useState(0),
     [result, setResult] = useState<{
@@ -50,6 +52,7 @@ export function EstadoFicha({
         </div>
       )}
       {current?.existe === true && <p role="status">Ficha clínica creada.</p>}
+      {current?.existe === true && onRead && <button onClick={onRead}>Ver ficha clínica</button>}
       {current?.existe === false && (
         <>
           <p>Este paciente todavía no tiene ficha clínica.</p>

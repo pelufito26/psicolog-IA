@@ -31,6 +31,7 @@ test.each([
   expect(validarFicha(fields).errors).toBeTruthy(),
 );
 const repo = () => ({
+  read: vi.fn<FichaRepository['read']>(async () => null),
   state: vi.fn<FichaRepository['state']>(async () => false),
   create: vi.fn<FichaRepository['create']>(async () => ({ kind: 'created', id: 'ficha' })),
 });
@@ -78,3 +79,30 @@ test('crear valida, usa profesional del servidor y traduce conflictos sin textos
   r.create.mockRejectedValue(new Error('privado'));
   expect((await service.create(input)).body).toEqual({ codigo: 'CREACION_NO_CONFIRMADA' });
 });
+
+test('consulta distingue ausencia de paciente, ficha vacía y contenido sin modificarlo', async () => {
+  const r = repo(),
+    service = createFicha(r, 'prof');
+  expect(await service.read({ pacienteId: patient })).toEqual({
+    status: 404,
+    body: { codigo: 'PACIENTE_NO_DISPONIBLE' },
+  });
+  const data = { pacienteId: patient, nombre: 'Demo', apellido: 'Ficticio', ficha: null };
+  r.read.mockResolvedValue(data);
+  expect(await service.read({ pacienteId: patient })).toEqual({ status: 200, body: data });
+  expect(r.read).toHaveBeenCalledWith('prof', patient);
+  expect(r.create).not.toHaveBeenCalled();
+  r.read.mockRejectedValue(new Error('texto privado'));
+  expect(await service.read({ pacienteId: patient })).toEqual({
+    status: 503,
+    body: { codigo: 'FICHA_NO_DISPONIBLE' },
+  });
+});
+test.each([null, [], {}, { pacienteId: 'no' }, { pacienteId: patient, profesional: 'otro' }])(
+  'consulta rechaza entrada %j',
+  async (input) => {
+    const r = repo();
+    expect((await createFicha(r, 'prof').read(input)).status).toBe(400);
+    expect(r.read).not.toHaveBeenCalled();
+  },
+);

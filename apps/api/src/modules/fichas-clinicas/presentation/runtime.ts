@@ -5,7 +5,7 @@ import { PgFichaRepository } from '../infrastructure/pg-ficha.js';
 export function createFichaRuntime(env: NodeJS.ProcessEnv) {
   let pool: Pool | undefined;
   const execute =
-    (operation: 'state' | 'create'): FichaHandler =>
+    (operation: 'state' | 'create' | 'read'): FichaHandler =>
     async (input, professional) => {
       if (
         env.NODE_ENV === 'production' ||
@@ -27,6 +27,7 @@ export function createFichaRuntime(env: NodeJS.ProcessEnv) {
     };
   return {
     state: execute('state'),
+    read: execute('read'),
     create: execute('create'),
     close: async () => {
       await pool?.end();

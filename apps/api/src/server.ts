@@ -14,6 +14,7 @@ const server = createApp({
   editSave: runtime.editSave,
   access: access.http,
   fichaState: fichas.state,
+  fichaRead: fichas.read,
   fichaCreate: fichas.create,
 }).listen(3001, '127.0.0.1', () => {
   console.log('API local: http://127.0.0.1:3001');
