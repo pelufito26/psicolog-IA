@@ -11,6 +11,8 @@ import { createPerfil } from '../../apps/api/dist/modules/pacientes/application/
 import { PgPerfilRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-perfil.js';
 import { createEditar } from '../../apps/api/dist/modules/pacientes/application/editar.js';
 import { PgEdicionRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-edicion.js';
+import { createFicha } from '../../apps/api/dist/modules/fichas-clinicas/application/ficha.js';
+import { PgFichaRepository } from '../../apps/api/dist/modules/fichas-clinicas/infrastructure/pg-ficha.js';
 import { PgPacienteRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-repository.js';
 import { PgConsultaRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-consulta.js';
 import { fakeIdentity } from '../auth-tests/fakes.mjs';
@@ -119,6 +121,10 @@ export async function testAcceso(admin, url) {
     const editing = (professional) =>
       createEditar(new PgEdicionRepository(pool), professional, { secret: editSecret });
     const app = createApp({
+      fichaState: (data, professional) =>
+        createFicha(new PgFichaRepository(pool), professional).state(data),
+      fichaCreate: (data, professional) =>
+        createFicha(new PgFichaRepository(pool), professional).create(data),
       access: accessHttp(service),
       register: (data, professional) =>
         createRegistrar(new PgPacienteRepository(pool), professional)(data),
@@ -160,6 +166,12 @@ export async function testAcceso(admin, url) {
     }
     await request(one, '/api/acceso/estado');
     const profileInput = { id: randomUUID() };
+    const fichaInput = { pacienteId: profileInput.id, motivoConsulta: 'Solo prueba ficticia' };
+    for (const path of ['/estado', '/crear'])
+      assert.equal(
+        (await request(one, '/api/fichas-clinicas' + path, fichaInput)).response.status,
+        401,
+      );
     for (const path of ['/edicion', '/actualizar'])
       assert.equal(
         (await request(one, '/api/pacientes' + path, profileInput)).response.status,
@@ -213,6 +225,11 @@ export async function testAcceso(admin, url) {
       401,
     );
     const codeOne = fake.outbox.at(-1).code;
+    for (const path of ['/estado', '/crear'])
+      assert.equal(
+        (await request(one, '/api/fichas-clinicas' + path, fichaInput)).response.status,
+        401,
+      );
     for (const path of ['/edicion', '/actualizar'])
       assert.equal(
         (await request(one, '/api/pacientes' + path, profileInput)).response.status,
@@ -232,6 +249,40 @@ export async function testAcceso(admin, url) {
     const createdPatient = await request(one, '/api/pacientes', patient);
     assert.equal(createdPatient.response.status, 201);
     const patientId = createdPatient.body.id;
+    const fichaOwn = { ...fichaInput, pacienteId: patientId };
+    assert.equal(
+      (await request(one, '/api/fichas-clinicas/estado', { pacienteId: patientId })).body.existe,
+      false,
+    );
+    assert.equal(
+      (await request(one, '/api/fichas-clinicas/crear', fichaOwn, { 'x-csrf-token': 'falso' }))
+        .response.status,
+      403,
+    );
+    assert.equal(
+      (
+        await request(one, '/api/fichas-clinicas/crear', fichaOwn, {
+          origin: 'https://ajeno.invalid',
+        })
+      ).response.status,
+      403,
+    );
+    assert.equal(
+      (await request(one, '/api/fichas-clinicas/crear', { ...fichaOwn, profesional: 'ajeno' }))
+        .response.status,
+      400,
+    );
+    assert.equal(
+      (await request(one, '/api/fichas-clinicas/crear', { ...fichaOwn, motivoConsulta: ' ' }))
+        .response.status,
+      400,
+    );
+    assert.equal((await request(one, '/api/fichas-clinicas/crear', fichaOwn)).response.status, 201);
+    assert.equal((await request(one, '/api/fichas-clinicas/crear', fichaOwn)).response.status, 409);
+    assert.deepEqual(
+      (await request(one, '/api/fichas-clinicas/estado', { pacienteId: patientId })).body,
+      { existe: true },
+    );
     const edition = await request(one, '/api/pacientes/edicion', { id: patientId });
     assert.equal(edition.response.status, 200);
     assert.equal(edition.body.stamp, undefined);
@@ -294,6 +345,20 @@ export async function testAcceso(admin, url) {
     await request(two, '/api/acceso/ingresar', { email: email2, password: registration.password });
     await request(two, '/api/acceso/verificar', { codigo: fake.outbox.at(-1).code });
     const foreignProfile = await request(two, '/api/pacientes/perfil', { id: patientId });
+    for (const path of ['/estado', '/crear']) {
+      const payload = path === '/estado' ? {} : { motivoConsulta: 'Ficticio' };
+      const foreign = await request(two, '/api/fichas-clinicas' + path, {
+        ...payload,
+        pacienteId: patientId,
+      });
+      const missing = await request(two, '/api/fichas-clinicas' + path, {
+        ...payload,
+        pacienteId: profileInput.id,
+      });
+      assert.equal(foreign.response.status, 404);
+      assert.equal(missing.response.status, 404);
+      assert.deepEqual(foreign.body, missing.body);
+    }
     for (const path of ['/edicion', '/actualizar']) {
       const payload = path === '/actualizar' ? changes : {};
       const foreign = await request(two, '/api/pacientes' + path, { ...payload, id: patientId });
@@ -344,6 +409,12 @@ export async function testAcceso(admin, url) {
       401,
     );
     now += 1800001;
+    for (const jar of [saved, two])
+      for (const path of ['/estado', '/crear'])
+        assert.equal(
+          (await request(jar, '/api/fichas-clinicas' + path, fichaInput)).response.status,
+          401,
+        );
     for (const jar of [saved, two])
       for (const path of ['/edicion', '/actualizar'])
         assert.equal((await request(jar, '/api/pacientes' + path, changes)).response.status, 401);

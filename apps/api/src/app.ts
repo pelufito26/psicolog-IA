@@ -1,5 +1,7 @@
 import express, { type RequestHandler } from 'express';
 import { pacienteRoutes, type PatientHandler } from './modules/pacientes/presentation/routes.js';
+import { fichaRoutes } from './modules/fichas-clinicas/presentation/routes.js';
+import type { FichaHandler } from './modules/fichas-clinicas/application/ficha.js';
 export function createApp(
   options: {
     register?: PatientHandler;
@@ -7,6 +9,8 @@ export function createApp(
     profile?: PatientHandler;
     editLoad?: PatientHandler;
     editSave?: PatientHandler;
+    fichaState?: FichaHandler;
+    fichaCreate?: FichaHandler;
     access?: { router: express.Router; guard: RequestHandler };
   } = {},
 ) {
@@ -18,12 +22,14 @@ export function createApp(
     app.use('/api/acceso', (_req, res) =>
       res.status(503).json({ codigo: 'ACCESO_NO_CONFIGURADO' }),
     );
+  const guard: RequestHandler =
+    options.access?.guard ??
+    ((_req, res) => {
+      res.set('Cache-Control', 'no-store').status(401).json({ codigo: 'INGRESO_REQUERIDO' });
+    });
   app.use(
     '/api/pacientes',
-    options.access?.guard ??
-      ((_req, res) => {
-        res.status(401).json({ codigo: 'INGRESO_REQUERIDO' });
-      }),
+    guard,
     pacienteRoutes(
       options.register ??
         (async () => ({ status: 503, body: { codigo: 'DESARROLLO_NO_CONFIGURADO' } })),
@@ -34,6 +40,16 @@ export function createApp(
         (async () => ({ status: 503, body: { codigo: 'EDICION_NO_DISPONIBLE' } })),
       options.editSave ??
         (async () => ({ status: 503, body: { codigo: 'GUARDADO_NO_CONFIRMADO' } })),
+    ),
+  );
+  app.use(
+    '/api/fichas-clinicas',
+    guard,
+    fichaRoutes(
+      options.fichaState ??
+        (async () => ({ status: 503, body: { codigo: 'FICHA_NO_CONFIGURADA' } })),
+      options.fichaCreate ??
+        (async () => ({ status: 503, body: { codigo: 'FICHA_NO_CONFIGURADA' } })),
     ),
   );
   return app;
