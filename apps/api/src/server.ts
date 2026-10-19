@@ -1,9 +1,11 @@
 import { createApp } from './app.js';
 import { createRegistrationRuntime } from './modules/pacientes/presentation/runtime.js';
 import { createAccessRuntime } from './modules/acceso/runtime.js';
+import { createFichaRuntime } from './modules/fichas-clinicas/presentation/runtime.js';
 
 const runtime = createRegistrationRuntime(process.env);
 const access = createAccessRuntime(process.env);
+const fichas = createFichaRuntime(process.env);
 const server = createApp({
   register: runtime.register,
   list: runtime.list,
@@ -11,6 +13,8 @@ const server = createApp({
   editLoad: runtime.editLoad,
   editSave: runtime.editSave,
   access: access.http,
+  fichaState: fichas.state,
+  fichaCreate: fichas.create,
 }).listen(3001, '127.0.0.1', () => {
   console.log('API local: http://127.0.0.1:3001');
 });
@@ -27,6 +31,7 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
     server.close(() => {
       void runtime.close();
       void access.close();
+      void fichas.close();
     }),
   );
 }

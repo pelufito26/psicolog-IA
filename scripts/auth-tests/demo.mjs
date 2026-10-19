@@ -13,6 +13,8 @@ import { createListar } from '../../apps/api/dist/modules/pacientes/application/
 import { createPerfil } from '../../apps/api/dist/modules/pacientes/application/perfil.js';
 import { PgPerfilRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-perfil.js';
 import { createEditar } from '../../apps/api/dist/modules/pacientes/application/editar.js';
+import { createFicha } from '../../apps/api/dist/modules/fichas-clinicas/application/ficha.js';
+import { PgFichaRepository } from '../../apps/api/dist/modules/fichas-clinicas/infrastructure/pg-ficha.js';
 import { PgEdicionRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-edicion.js';
 import { PgPacienteRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-repository.js';
 import { PgConsultaRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-consulta.js';
@@ -65,6 +67,10 @@ try {
   const edit = (professional) =>
     createEditar(new PgEdicionRepository(pool), professional, { secret: editSecret });
   const app = createApp({
+    fichaState: (data, professional) =>
+      createFicha(new PgFichaRepository(pool), professional).state(data),
+    fichaCreate: (data, professional) =>
+      createFicha(new PgFichaRepository(pool), professional).create(data),
     access: accessHttp(service, false, true),
     register: (data, professional) =>
       createRegistrar(new PgPacienteRepository(pool), professional, { secret: editSecret })(data),

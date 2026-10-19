@@ -7,19 +7,25 @@ import {
 } from './profile-client';
 import { EditarPaciente } from './EditarPaciente';
 import type { Editor } from './edit-client';
+import { EstadoFicha } from '../fichas-clinicas/EstadoFicha';
+import { CrearFicha } from '../fichas-clinicas/CrearFicha';
+import type { FichaAPI } from '../fichas-clinicas/client';
 export function PerfilPaciente({
   id,
   load = consultarPerfil,
   onBack,
   editor,
+  fichas,
 }: {
   id: string;
   load?: ConsultarPerfil;
   onBack: () => void;
   editor?: Editor;
+  fichas?: FichaAPI;
 }) {
   const [revision, setRevision] = useState(0);
   const [editing, setEditing] = useState(false);
+  const [creatingFicha, setCreatingFicha] = useState(false);
   const [notice, setNotice] = useState('');
   const [result, setResult] = useState<{
     id: string;
@@ -30,9 +36,9 @@ export function PerfilPaciente({
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     heading.current?.focus();
-  }, [id, editing]);
+  }, [id, editing, creatingFicha]);
   useEffect(() => {
-    if (editing) return;
+    if (editing || creatingFicha) return;
     const controller = new AbortController();
     let active = true;
     load(id, controller.signal).then(
@@ -52,9 +58,22 @@ export function PerfilPaciente({
       active = false;
       controller.abort();
     };
-  }, [id, load, revision, editing]);
+  }, [id, load, revision, editing, creatingFicha]);
   const current = result?.id === id && result.revision === revision ? result : undefined;
   const data = current?.data;
+  if (creatingFicha)
+    return (
+      <CrearFicha
+        key={id}
+        pacienteId={id}
+        api={fichas}
+        onClose={(saved) => {
+          setCreatingFicha(false);
+          setRevision((r) => r + 1);
+          setNotice(saved ? 'Ficha clínica creada correctamente.' : '');
+        }}
+      />
+    );
   if (editing)
     return (
       <EditarPaciente
@@ -119,6 +138,16 @@ export function PerfilPaciente({
             <dd>{data.telefono}</dd>
           </div>
         </dl>
+      )}
+      {data && (
+        <EstadoFicha
+          pacienteId={id}
+          api={fichas}
+          onCreate={() => {
+            setNotice('');
+            setCreatingFicha(true);
+          }}
+        />
       )}
     </section>
   );

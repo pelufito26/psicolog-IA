@@ -1,6 +1,7 @@
 import { testListado } from './listado.mjs';
 import { testPerfil } from './perfil.mjs';
 import { testEdicion } from './edicion.mjs';
+import { testFichas } from './fichas.mjs';
 import { testAcceso } from './acceso.mjs';
 import assert from 'node:assert/strict';
 import { readFile, readdir } from 'node:fs/promises';
@@ -327,6 +328,7 @@ try {
       await testListado(client, databaseUrl.toString());
       await testPerfil(client, databaseUrl.toString());
       await testEdicion(client, databaseUrl.toString());
+      await testFichas(client, databaseUrl.toString());
       await testAcceso(client, databaseUrl.toString());
     } finally {
       await client.end();

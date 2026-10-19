@@ -110,3 +110,11 @@ Editar datos carga los cuatro campos actuales mediante POST /api/pacientes/edici
 La versión opaca se calcula con HMAC sobre el timestamp de PostgreSQL con precisión completa. Bajo bloqueo compartido con el alta y bloqueo de fila se vuelve a verificar antes de actualizar: un cambio concurrente devuelve conflicto, conserva el borrador y requiere recarga explícita. Los verificadores dependen del secreto del proceso y se invalidan al reiniciar. Ante respuesta de escritura perdida, revisar el perfil antes de reintentar; no se promete que una cancelación de red revierta un COMMIT.
 
 La fixture ficticia de perfil también permite probar edición; el harness conserva un secreto estable entre peticiones de alta/edición. Pruebas de concurrencia, relaciones clínicas e identidades aisladas solo en PostgreSQL local desechable. Sin cambios de esquema ni operaciones remotas. Evidencia: specs/008-editar-paciente/validation.md.
+
+## CU05 — Crear ficha clínica
+
+El perfil consulta POST /api/fichas-clinicas/estado con pacienteId: devuelve solo existencia, sin contenido clínico. Ofrece crear únicamente tras comprobar que falta; errores no equivalen a ausencia. POST /api/fichas-clinicas/crear recibe pacienteId y motivoConsulta obligatorio, con antecedentesPersonales, antecedentesFamiliares, medicacion, evaluacionClinica y observacionesGenerales opcionales. Se preserva el formato interno como texto plano y los opcionales vacíos se almacenan como NULL.
+
+Módulo fichas-clinicas con contratos propios, sesión/CSRF y propietario del paciente comprobados, contexto RLS transaccional y restricción UNIQUE existente. La creación no sobrescribe fichas ni modifica pacientes/sesiones. JSON total hasta 16 KiB, respuestas no-store y sin textos clínicos en URL/logs/almacenamiento persistente. Ante creación incierta, conservar borrador y comprobar estado sin reenvío automático; existencia no confirma el contenido de una petición perdida. Consulta completa/edición quedan para CU06/CU07.
+
+Demo con la fixture local de pacientes y textos exclusivamente ficticios. npm run check y test:database verifican validación, separación de profesionales, carreras y preservación de datos. No requiere migraciones o dependencias nuevas. Evidencia única: specs/009-crear-ficha-clinica/validation.md.
