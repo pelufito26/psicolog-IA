@@ -297,7 +297,49 @@ try {
         await rejected(client, 'select * from psicologia.pacientes', '42501');
         await client.query('RESET ROLE');
       }
+      const otherPatient = (await ok(client, createPatient, [p2])).rows[0].id;
+      const otherFile = (
+        await ok(
+          client,
+          "insert into psicologia.fichas_clinicas(paciente_id,motivo_consulta) values($1,'Aislamiento ficticio') returning id",
+          [otherPatient],
+        )
+      ).rows[0].id;
       await client.query('SET LOCAL ROLE psicologia_backend');
+      await client.query("select set_config('app.profesional',$1,true)", [p1]);
+      assert.equal(
+        (await ok(client, 'select id from psicologia.fichas_clinicas where id=$1', [f])).rowCount,
+        1,
+      );
+      assert.equal(
+        (await ok(client, 'select id from psicologia.fichas_clinicas where id=$1', [otherFile]))
+          .rowCount,
+        0,
+      );
+      assert.equal(
+        (
+          await ok(
+            client,
+            "update psicologia.fichas_clinicas set motivo_consulta='No permitido' where id=$1",
+            [otherFile],
+          )
+        ).rowCount,
+        0,
+      );
+      await rejected(
+        client,
+        'update psicologia.fichas_clinicas set paciente_id=$1 where id=$2',
+        '23514',
+        [otherPatient, f],
+      );
+      await rejected(
+        client,
+        "insert into psicologia.fichas_clinicas(paciente_id,motivo_consulta) values($1,'No permitido')",
+        '42501',
+        [otherPatient],
+      );
+      await client.query("select set_config('app.profesional','',true)");
+      assert.equal((await ok(client, 'select id from psicologia.fichas_clinicas')).rowCount, 0);
       await client.query("select set_config('app.profesional',$1,true)", [p1]);
       await ok(client, 'select * from psicologia.pacientes');
       await ok(client, createPatient, [p1]);

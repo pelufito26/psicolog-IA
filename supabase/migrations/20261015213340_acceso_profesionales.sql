@@ -1,4 +1,4 @@
--- Preparación local: no aplicar remotamente sin revisión/autorización.
+-- Migracion aplicada en desarrollo el 15 de octubre de 2026; ver DEC-011.
 CREATE SCHEMA acceso;
 REVOKE ALL ON SCHEMA acceso FROM PUBLIC, anon, authenticated;
 CREATE TABLE acceso.cuentas (
@@ -59,5 +59,7 @@ DROP POLICY backend_select ON psicologia.fichas_clinicas;
 DROP POLICY backend_insert ON psicologia.fichas_clinicas;
 DROP POLICY backend_update ON psicologia.fichas_clinicas;
 CREATE POLICY propietario ON psicologia.fichas_clinicas TO psicologia_backend
-  USING (EXISTS (SELECT 1 FROM psicologia.pacientes p WHERE p.id=paciente_id))
-  WITH CHECK (EXISTS (SELECT 1 FROM psicologia.pacientes p WHERE p.id=paciente_id));
+  USING (EXISTS (SELECT 1 FROM psicologia.pacientes p WHERE p.id=paciente_id
+    AND p.profesional_id::text = current_setting('app.profesional',true)))
+  WITH CHECK (EXISTS (SELECT 1 FROM psicologia.pacientes p WHERE p.id=paciente_id
+    AND p.profesional_id::text = current_setting('app.profesional',true)));

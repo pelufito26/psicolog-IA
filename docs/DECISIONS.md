@@ -59,6 +59,14 @@ El usuario eligió explícitamente contraseña + código por correo y aprobó AU
 
 Plan AUTH-plan-r1 y T1–T6 aprobados mediante «oka dale», después de confirmar que primero se usa correo de prueba. Se implementa y verifica localmente; T7, correo real, migración/permisos remotos, publicación y despliegue quedan fuera. Se preparan adaptadores reales sin configurarlos ni transmitir datos reales. El ensayo ficticio no equivale a validar Supabase Auth real.
 
+## DEC-011 — Piloto de acceso con correo real
+
+El 15 de octubre de 2026 el usuario autorizó expresamente aplicar la migración de acceso en vrqmpdedckkgxpdleepr, configurar Auth/correo con redirección local y enviar hasta seis correos de registro, ingreso y recuperación exclusivamente a la dirección de su cuenta Resend, indicada en la conversación y conservada fuera de Git. Sin dominio propio se utiliza onboarding@resend.dev. No incluye contratación, despliegue, pacientes reales, destinatarios adicionales ni publicación.
+
+Antes de la primera aplicación remota se hizo explícita la comprobación del profesional propietario en la política de fichas, a raíz de un rechazo de revisión automática. Se agregaron ensayos de lectura/escritura ajena, cambio de paciente y contexto vacío. La migración aprobada se aplicó con versión remota 20261015213340; se alineó el nombre local. La configuración del proveedor y la prueba de recepción siguen pendientes y no se confunden con la evidencia simulada.
+
+Actualización del 20 de octubre: usuario ingresó personalmente al panel y confirmó guardar SMTP con la clave existente de Resend en Supabase. Se configuraron remitente de prueba, redirección local exacta y plantillas de confirmación/recuperación. El usuario completó registro, confirmación, contraseña+código y logout; dos correos entregados y revocación comprobada en DB. Recuperación diferida expresamente; aislamiento con dos cuentas reales no ensayado. T7 permanece parcial. El usuario autorizó posteriormente consolidar en Git los cambios/evidencia ya realizados y preparar su PR mediante «dale»; no incluye nuevos envíos, migraciones remotas, permisos, recuperación, merge ni despliegue. La aceptación productiva sigue fuera.
+
 ## DEC-012 — CU03: datos personales del perfil
 
 El 15 de octubre de 2026 el usuario aprobó CU03-r1 mediante «si». Incluye abrir un paciente propio desde el listado, consultar nombre/apellido/nacimiento/edad/teléfono, volver conservando búsqueda y página, aislamiento por sesión y manejo de estados. Los accesos a ficha clínica y sesiones se difieren hasta implementar sus casos; edición pertenece a CU04. Se acepta desarrollar y verificar con el harness ficticio existente mientras AUTH T7 espera configuración de correo real. Es una propuesta aprobada desde el resumen, no un caso original recuperado. Plan y tareas pendientes de aprobación conjunta; no autoriza implementación ni amplía operaciones remotas o publicación.
