@@ -144,6 +144,54 @@ export async function testFichas(admin, url) {
     );
     assert.equal(await repository.state(professionals[0], patients[1]), false);
     assert.equal((await pool.query('select id from psicologia.fichas_clinicas')).rowCount, 0);
+    const snapshot = async () =>
+      (
+        await admin.query(`select
+      (select jsonb_agg(to_jsonb(f) order by f.id) from psicologia.fichas_clinicas f) fichas,
+      (select jsonb_agg(to_jsonb(p) order by p.id) from psicologia.pacientes p) pacientes,
+      (select jsonb_agg(to_jsonb(s) order by s.id) from psicologia.sesiones_clinicas s) sesiones`)
+      ).rows[0];
+    const beforeRead = await snapshot();
+    const read = await service.read({ pacienteId: patients[0] });
+    assert.equal(read.status, 200);
+    assert.deepEqual(read.body, {
+      pacienteId: patients[0],
+      nombre: 'Paciente',
+      apellido: 'Ficticio',
+      ficha: {
+        id: saved.id,
+        motivoConsulta: saved.motivo_consulta,
+        antecedentesPersonales: null,
+        antecedentesFamiliares: null,
+        medicacion: null,
+        evaluacionClinica: null,
+        observacionesGenerales: null,
+        fechaCreacion: saved.fecha_creacion.toISOString(),
+        fechaUltimaModificacion: saved.fecha_ultima_modificacion.toISOString(),
+      },
+    });
+    assert.deepEqual(await service.read({ pacienteId: patients[1] }), {
+      status: 200,
+      body: { pacienteId: patients[1], nombre: 'Paciente', apellido: 'Ficticio', ficha: null },
+    });
+    const foreignRead = await service.read({ pacienteId: patients[2] });
+    assert.equal(foreignRead.status, 404);
+    assert.deepEqual(foreignRead, await service.read({ pacienteId: absent }));
+    const optionalRead = await other.read({ pacienteId: patients[2] });
+    assert.equal(optionalRead.body.ficha.observacionesGenerales, text);
+    assert.equal(optionalRead.body.ficha.antecedentesPersonales, 'Antecedente ficticio');
+    assert.equal(optionalRead.body.ficha.medicacion, null);
+    await assert.rejects(repository.read('', patients[0]), (e) => e.code === '22P02');
+    await assert.rejects(
+      repository.read(professionals[0], 'invalid-uuid'),
+      (e) => e.code === '22P02',
+    );
+    assert.equal((await pool.query('select id from psicologia.fichas_clinicas')).rowCount, 0);
+    assert.equal((await service.read({ pacienteId: patients[0] })).status, 200);
+    assert.deepEqual(await snapshot(), beforeRead);
+    console.log(
+      'CU06 PostgreSQL: lectura propia/ausente, textos y fechas, aislamiento, contexto tras fallo y registros intactos aprobados.',
+    );
     console.log(
       'CU05 PostgreSQL: motivo único obligatorio, opcionales/formato, unicidad concurrente, contenido intacto, aislamiento, relaciones y rollback aprobados.',
     );

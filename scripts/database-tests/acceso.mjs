@@ -121,6 +121,8 @@ export async function testAcceso(admin, url) {
     const editing = (professional) =>
       createEditar(new PgEdicionRepository(pool), professional, { secret: editSecret });
     const app = createApp({
+      fichaRead: (data, professional) =>
+        createFicha(new PgFichaRepository(pool), professional).read(data),
       fichaState: (data, professional) =>
         createFicha(new PgFichaRepository(pool), professional).state(data),
       fichaCreate: (data, professional) =>
@@ -167,7 +169,7 @@ export async function testAcceso(admin, url) {
     await request(one, '/api/acceso/estado');
     const profileInput = { id: randomUUID() };
     const fichaInput = { pacienteId: profileInput.id, motivoConsulta: 'Solo prueba ficticia' };
-    for (const path of ['/estado', '/crear'])
+    for (const path of ['/estado', '/crear', '/consultar'])
       assert.equal(
         (await request(one, '/api/fichas-clinicas' + path, fichaInput)).response.status,
         401,
@@ -225,7 +227,7 @@ export async function testAcceso(admin, url) {
       401,
     );
     const codeOne = fake.outbox.at(-1).code;
-    for (const path of ['/estado', '/crear'])
+    for (const path of ['/estado', '/crear', '/consultar'])
       assert.equal(
         (await request(one, '/api/fichas-clinicas' + path, fichaInput)).response.status,
         401,
@@ -250,6 +252,21 @@ export async function testAcceso(admin, url) {
     assert.equal(createdPatient.response.status, 201);
     const patientId = createdPatient.body.id;
     const fichaOwn = { ...fichaInput, pacienteId: patientId };
+    const readInput = { pacienteId: patientId };
+    const emptyRead = await request(one, '/api/fichas-clinicas/consultar', readInput);
+    assert.equal(emptyRead.response.status, 200);
+    assert.equal(emptyRead.body.ficha, null);
+    assert.equal(emptyRead.response.headers.get('cache-control'), 'no-store');
+    for (const headers of [{ 'x-csrf-token': 'falso' }, { origin: 'https://ajeno.invalid' }])
+      assert.equal(
+        (await request(one, '/api/fichas-clinicas/consultar', readInput, headers)).response.status,
+        403,
+      );
+    assert.equal(
+      (await request(one, '/api/fichas-clinicas/consultar', { ...readInput, profesional: 'otro' }))
+        .response.status,
+      400,
+    );
     assert.equal(
       (await request(one, '/api/fichas-clinicas/estado', { pacienteId: patientId })).body.existe,
       false,
@@ -284,6 +301,13 @@ export async function testAcceso(admin, url) {
       { existe: true },
     );
     const edition = await request(one, '/api/pacientes/edicion', { id: patientId });
+    const clinicalRead = await request(one, '/api/fichas-clinicas/consultar', readInput);
+    assert.equal(clinicalRead.response.status, 200);
+    assert.equal(clinicalRead.body.pacienteId, patientId);
+    assert.equal(clinicalRead.body.nombre, patient.nombre);
+    assert.equal(clinicalRead.body.apellido, patient.apellido);
+    assert.equal(clinicalRead.body.ficha.motivoConsulta, fichaOwn.motivoConsulta);
+    assert.equal(clinicalRead.body.ficha.medicacion, null);
     assert.equal(edition.response.status, 200);
     assert.equal(edition.body.stamp, undefined);
     const changes = { ...edition.body, telefono: '1414141' };
@@ -345,8 +369,8 @@ export async function testAcceso(admin, url) {
     await request(two, '/api/acceso/ingresar', { email: email2, password: registration.password });
     await request(two, '/api/acceso/verificar', { codigo: fake.outbox.at(-1).code });
     const foreignProfile = await request(two, '/api/pacientes/perfil', { id: patientId });
-    for (const path of ['/estado', '/crear']) {
-      const payload = path === '/estado' ? {} : { motivoConsulta: 'Ficticio' };
+    for (const path of ['/estado', '/crear', '/consultar']) {
+      const payload = path !== '/crear' ? {} : { motivoConsulta: 'Ficticio' };
       const foreign = await request(two, '/api/fichas-clinicas' + path, {
         ...payload,
         pacienteId: patientId,
@@ -410,7 +434,7 @@ export async function testAcceso(admin, url) {
     );
     now += 1800001;
     for (const jar of [saved, two])
-      for (const path of ['/estado', '/crear'])
+      for (const path of ['/estado', '/crear', '/consultar'])
         assert.equal(
           (await request(jar, '/api/fichas-clinicas' + path, fichaInput)).response.status,
           401,

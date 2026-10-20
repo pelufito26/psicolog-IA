@@ -67,6 +67,8 @@ try {
   const edit = (professional) =>
     createEditar(new PgEdicionRepository(pool), professional, { secret: editSecret });
   const app = createApp({
+    fichaRead: (data, professional) =>
+      createFicha(new PgFichaRepository(pool), professional).read(data),
     fichaState: (data, professional) =>
       createFicha(new PgFichaRepository(pool), professional).state(data),
     fichaCreate: (data, professional) =>

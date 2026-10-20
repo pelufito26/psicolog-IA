@@ -1,5 +1,13 @@
 import { validarFicha, type DatosFicha } from '../domain/ficha.js';
+export interface ConsultaFicha {
+  pacienteId: string;
+  nombre: string;
+  apellido: string;
+  ficha:
+    (DatosFicha & { id: string; fechaCreacion: string; fechaUltimaModificacion: string }) | null;
+}
 export interface FichaRepository {
+  read(professional: string, patient: string): Promise<ConsultaFicha | null>;
   state(professional: string, patient: string): Promise<boolean | null>;
   create(
     professional: string,
@@ -55,5 +63,21 @@ export function createFicha(repository: FichaRepository, professional: string) {
       return { status: 503, body: { codigo: 'CREACION_NO_CONFIRMADA' } };
     }
   };
-  return { state, create };
+  const read: FichaHandler = async (input) => {
+    const body = parse(input);
+    if (
+      !body ||
+      Object.keys(body).some((k) => k !== 'pacienteId') ||
+      typeof body.pacienteId !== 'string' ||
+      !uuid.test(body.pacienteId)
+    )
+      return { status: 400, body: { codigo: 'CONSULTA_INVALIDA' } };
+    try {
+      const result = await repository.read(professional, body.pacienteId);
+      return result === null ? missing : { status: 200, body: { ...result } };
+    } catch {
+      return { status: 503, body: { codigo: 'FICHA_NO_DISPONIBLE' } };
+    }
+  };
+  return { state, create, read };
 }

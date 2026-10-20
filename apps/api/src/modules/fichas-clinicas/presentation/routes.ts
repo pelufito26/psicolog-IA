@@ -1,6 +1,6 @@
 import express, { type ErrorRequestHandler } from 'express';
 import type { FichaHandler } from '../application/ficha.js';
-export function fichaRoutes(state: FichaHandler, create: FichaHandler) {
+export function fichaRoutes(state: FichaHandler, create: FichaHandler, read: FichaHandler) {
   const router = express.Router();
   router.use((req, res, next) => {
     res.set('Cache-Control', 'no-store');
@@ -17,6 +17,7 @@ export function fichaRoutes(state: FichaHandler, create: FichaHandler) {
   router.use(express.json({ limit: '16kb' }));
   for (const [path, handler] of [
     ['/estado', state],
+    ['/consultar', read],
     ['/crear', create],
   ] as const)
     router.post(path, async (req, res) => {

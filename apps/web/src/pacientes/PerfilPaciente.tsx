@@ -10,22 +10,27 @@ import type { Editor } from './edit-client';
 import { EstadoFicha } from '../fichas-clinicas/EstadoFicha';
 import { CrearFicha } from '../fichas-clinicas/CrearFicha';
 import type { FichaAPI } from '../fichas-clinicas/client';
+import { ConsultarFicha } from '../fichas-clinicas/ConsultarFicha';
+import type { ConsultarFicha as FichaLoader } from '../fichas-clinicas/consulta-client';
 export function PerfilPaciente({
   id,
   load = consultarPerfil,
   onBack,
   editor,
   fichas,
+  fichaLoad,
 }: {
   id: string;
   load?: ConsultarPerfil;
   onBack: () => void;
   editor?: Editor;
   fichas?: FichaAPI;
+  fichaLoad?: FichaLoader;
 }) {
   const [revision, setRevision] = useState(0);
   const [editing, setEditing] = useState(false);
   const [creatingFicha, setCreatingFicha] = useState(false);
+  const [readingFicha, setReadingFicha] = useState(false);
   const [notice, setNotice] = useState('');
   const [result, setResult] = useState<{
     id: string;
@@ -36,9 +41,9 @@ export function PerfilPaciente({
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     heading.current?.focus();
-  }, [id, editing, creatingFicha]);
+  }, [id, editing, creatingFicha, readingFicha]);
   useEffect(() => {
-    if (editing || creatingFicha) return;
+    if (editing || creatingFicha || readingFicha) return;
     const controller = new AbortController();
     let active = true;
     load(id, controller.signal).then(
@@ -58,9 +63,21 @@ export function PerfilPaciente({
       active = false;
       controller.abort();
     };
-  }, [id, load, revision, editing, creatingFicha]);
+  }, [id, load, revision, editing, creatingFicha, readingFicha]);
   const current = result?.id === id && result.revision === revision ? result : undefined;
   const data = current?.data;
+  if (readingFicha)
+    return (
+      <ConsultarFicha
+        key={id}
+        pacienteId={id}
+        load={fichaLoad}
+        onBack={() => {
+          setReadingFicha(false);
+          setRevision((r) => r + 1);
+        }}
+      />
+    );
   if (creatingFicha)
     return (
       <CrearFicha
@@ -143,6 +160,10 @@ export function PerfilPaciente({
         <EstadoFicha
           pacienteId={id}
           api={fichas}
+          onRead={() => {
+            setNotice('');
+            setReadingFicha(true);
+          }}
           onCreate={() => {
             setNotice('');
             setCreatingFicha(true);

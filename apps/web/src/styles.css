@@ -312,3 +312,19 @@ button.secondary {
   padding: 0.8rem;
   font: inherit;
 }
+.clinical-content {
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+}
+.clinical-content dt {
+  font-weight: 600;
+}
+.clinical-content dd {
+  margin: 0.35rem 0 0;
+}
+.clinical-text {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
