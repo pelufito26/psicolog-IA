@@ -1,3 +1,4 @@
+import { createEditarFicha } from '../../apps/api/dist/modules/fichas-clinicas/application/editar-ficha.js';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { Pool } from 'pg';
@@ -121,6 +122,10 @@ export async function testAcceso(admin, url) {
     const editing = (professional) =>
       createEditar(new PgEdicionRepository(pool), professional, { secret: editSecret });
     const app = createApp({
+      fichaEditLoad: (data, professional) =>
+        createEditarFicha(new PgFichaRepository(pool), professional, editSecret).load(data),
+      fichaEditSave: (data, professional) =>
+        createEditarFicha(new PgFichaRepository(pool), professional, editSecret).save(data),
       fichaRead: (data, professional) =>
         createFicha(new PgFichaRepository(pool), professional).read(data),
       fichaState: (data, professional) =>
@@ -169,7 +174,7 @@ export async function testAcceso(admin, url) {
     await request(one, '/api/acceso/estado');
     const profileInput = { id: randomUUID() };
     const fichaInput = { pacienteId: profileInput.id, motivoConsulta: 'Solo prueba ficticia' };
-    for (const path of ['/estado', '/crear', '/consultar'])
+    for (const path of ['/estado', '/crear', '/consultar', '/edicion', '/actualizar'])
       assert.equal(
         (await request(one, '/api/fichas-clinicas' + path, fichaInput)).response.status,
         401,
@@ -227,7 +232,7 @@ export async function testAcceso(admin, url) {
       401,
     );
     const codeOne = fake.outbox.at(-1).code;
-    for (const path of ['/estado', '/crear', '/consultar'])
+    for (const path of ['/estado', '/crear', '/consultar', '/edicion', '/actualizar'])
       assert.equal(
         (await request(one, '/api/fichas-clinicas' + path, fichaInput)).response.status,
         401,
@@ -301,6 +306,39 @@ export async function testAcceso(admin, url) {
       { existe: true },
     );
     const edition = await request(one, '/api/pacientes/edicion', { id: patientId });
+    const fichaEdition = await request(one, '/api/fichas-clinicas/edicion', readInput);
+    assert.equal(fichaEdition.response.status, 200);
+    const fichaChanges = {
+      pacienteId: patientId,
+      version: fichaEdition.body.ficha.version,
+      motivoConsulta: fichaOwn.motivoConsulta,
+      antecedentesPersonales: '',
+      antecedentesFamiliares: '',
+      medicacion: '',
+      evaluacionClinica: '',
+      observacionesGenerales: '',
+    };
+    for (const path of ['/edicion', '/actualizar']) {
+      const payload = path === '/edicion' ? readInput : fichaChanges;
+      for (const headers of [{ 'x-csrf-token': 'falso' }, { origin: 'https://ajeno.invalid' }])
+        assert.equal(
+          (await request(one, '/api/fichas-clinicas' + path, payload, headers)).response.status,
+          403,
+        );
+    }
+    assert.equal(
+      (await request(one, '/api/fichas-clinicas/actualizar', { ...fichaChanges, paciente: 'otro' }))
+        .response.status,
+      400,
+    );
+    assert.equal(
+      (await request(one, '/api/fichas-clinicas/actualizar', fichaChanges)).response.status,
+      200,
+    );
+    assert.equal(
+      (await request(one, '/api/fichas-clinicas/actualizar', fichaChanges)).body.codigo,
+      'EDICION_CONFLICTO',
+    );
     const clinicalRead = await request(one, '/api/fichas-clinicas/consultar', readInput);
     assert.equal(clinicalRead.response.status, 200);
     assert.equal(clinicalRead.body.pacienteId, patientId);
@@ -369,8 +407,21 @@ export async function testAcceso(admin, url) {
     await request(two, '/api/acceso/ingresar', { email: email2, password: registration.password });
     await request(two, '/api/acceso/verificar', { codigo: fake.outbox.at(-1).code });
     const foreignProfile = await request(two, '/api/pacientes/perfil', { id: patientId });
-    for (const path of ['/estado', '/crear', '/consultar']) {
-      const payload = path !== '/crear' ? {} : { motivoConsulta: 'Ficticio' };
+    for (const path of ['/estado', '/crear', '/consultar', '/edicion', '/actualizar']) {
+      const payload =
+        path === '/actualizar'
+          ? {
+              version: 'a'.repeat(43),
+              motivoConsulta: 'Ficticio',
+              antecedentesPersonales: '',
+              antecedentesFamiliares: '',
+              medicacion: '',
+              evaluacionClinica: '',
+              observacionesGenerales: '',
+            }
+          : path === '/crear'
+            ? { motivoConsulta: 'Ficticio' }
+            : {};
       const foreign = await request(two, '/api/fichas-clinicas' + path, {
         ...payload,
         pacienteId: patientId,
@@ -434,7 +485,7 @@ export async function testAcceso(admin, url) {
     );
     now += 1800001;
     for (const jar of [saved, two])
-      for (const path of ['/estado', '/crear', '/consultar'])
+      for (const path of ['/estado', '/crear', '/consultar', '/edicion', '/actualizar'])
         assert.equal(
           (await request(jar, '/api/fichas-clinicas' + path, fichaInput)).response.status,
           401,

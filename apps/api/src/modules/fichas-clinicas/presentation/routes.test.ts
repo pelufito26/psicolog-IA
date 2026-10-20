@@ -10,6 +10,8 @@ beforeEach(async () => {
   server = createApp({
     fichaState: handler,
     fichaRead: handler,
+    fichaEditLoad: handler,
+    fichaEditSave: handler,
     fichaCreate: handler,
     access: {
       router: express.Router(),
@@ -30,7 +32,7 @@ afterEach(
       server.close((error) => (error ? reject(error) : resolve())),
     ),
 );
-test.each(['/estado', '/crear', '/consultar'])(
+test.each(['/estado', '/crear', '/consultar', '/edicion', '/actualizar'])(
   'ruta %s tiene origen/JSON/límite y no-store',
   async (path) => {
     for (const [origin, type, body, status] of [

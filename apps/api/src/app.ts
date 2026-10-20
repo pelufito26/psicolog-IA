@@ -11,6 +11,8 @@ export function createApp(
     editSave?: PatientHandler;
     fichaState?: FichaHandler;
     fichaRead?: FichaHandler;
+    fichaEditLoad?: FichaHandler;
+    fichaEditSave?: FichaHandler;
     fichaCreate?: FichaHandler;
     access?: { router: express.Router; guard: RequestHandler };
   } = {},
@@ -53,6 +55,10 @@ export function createApp(
         (async () => ({ status: 503, body: { codigo: 'FICHA_NO_CONFIGURADA' } })),
       options.fichaRead ??
         (async () => ({ status: 503, body: { codigo: 'FICHA_NO_CONFIGURADA' } })),
+      options.fichaEditLoad ??
+        (async () => ({ status: 503, body: { codigo: 'FICHA_NO_CONFIGURADA' } })),
+      options.fichaEditSave ??
+        (async () => ({ status: 503, body: { codigo: 'GUARDADO_NO_CONFIRMADO' } })),
     ),
   );
   return app;

@@ -1,6 +1,12 @@
 import express, { type ErrorRequestHandler } from 'express';
 import type { FichaHandler } from '../application/ficha.js';
-export function fichaRoutes(state: FichaHandler, create: FichaHandler, read: FichaHandler) {
+export function fichaRoutes(
+  state: FichaHandler,
+  create: FichaHandler,
+  read: FichaHandler,
+  editLoad: FichaHandler,
+  editSave: FichaHandler,
+) {
   const router = express.Router();
   router.use((req, res, next) => {
     res.set('Cache-Control', 'no-store');
@@ -19,6 +25,8 @@ export function fichaRoutes(state: FichaHandler, create: FichaHandler, read: Fic
     ['/estado', state],
     ['/consultar', read],
     ['/crear', create],
+    ['/edicion', editLoad],
+    ['/actualizar', editSave],
   ] as const)
     router.post(path, async (req, res) => {
       try {

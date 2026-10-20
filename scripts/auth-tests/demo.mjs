@@ -1,3 +1,4 @@
+import { createEditarFicha } from '../../apps/api/dist/modules/fichas-clinicas/application/editar-ficha.js';
 // Explicit harness: fictitious identities and email only, isolated disposable DB.
 import { Client, Pool } from 'pg';
 import { readFile, readdir } from 'node:fs/promises';
@@ -67,6 +68,10 @@ try {
   const edit = (professional) =>
     createEditar(new PgEdicionRepository(pool), professional, { secret: editSecret });
   const app = createApp({
+    fichaEditLoad: (data, professional) =>
+      createEditarFicha(new PgFichaRepository(pool), professional, editSecret).load(data),
+    fichaEditSave: (data, professional) =>
+      createEditarFicha(new PgFichaRepository(pool), professional, editSecret).save(data),
     fichaRead: (data, professional) =>
       createFicha(new PgFichaRepository(pool), professional).read(data),
     fichaState: (data, professional) =>
