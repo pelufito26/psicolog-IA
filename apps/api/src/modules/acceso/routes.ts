@@ -1,3 +1,4 @@
+import { localOrigins } from '../../infrastructure/environment.js';
 import express, { type Request, type Response, type NextFunction } from 'express';
 import { timingSafeEqual } from 'node:crypto';
 import { AccessError } from './contracts.js';
@@ -6,7 +7,6 @@ export interface AccessContext {
   professional: string;
   user: string;
 }
-const origins = ['http://127.0.0.1:5173', 'http://localhost:5173'];
 function token(req: Request) {
   const match = req.headers.cookie
     ?.split(';')
@@ -48,7 +48,12 @@ function password(body: Record<string, unknown>) {
   if (value.length < 12 || value.length > 128) throw new AccessError(400, 'PASSWORD_INVALIDA');
   return value;
 }
-export function accessHttp(service: AccessService, secure = false, simulation = false) {
+export function accessHttp(
+  service: AccessService,
+  secure = false,
+  simulation = false,
+  origins = localOrigins,
+) {
   const router = express.Router();
   const csrf = (req: Request) => {
     const t = token(req);

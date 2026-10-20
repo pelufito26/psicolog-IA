@@ -3,6 +3,7 @@ import { Pool, type PoolClient, type PoolConfig } from 'pg';
 
 export function databaseConfig(env: NodeJS.ProcessEnv): PoolConfig {
   if (!env.DATABASE_URL) throw new Error('Configuración de base ausente');
+  if (env.DATABASE_CA_FILE && env.DATABASE_CA_PEM) throw new Error('CA ambigua');
   const url = new URL(env.DATABASE_URL);
   if (!['postgres:', 'postgresql:'].includes(url.protocol)) throw new Error('Protocolo inválido');
   // Evitar que los parámetros de URL sustituyan la verificación TLS explícita.
@@ -13,9 +14,13 @@ export function databaseConfig(env: NodeJS.ProcessEnv): PoolConfig {
     connectionString: url.toString(),
     ssl: {
       rejectUnauthorized: true,
-      ...(env.DATABASE_CA_FILE ? { ca: readFileSync(env.DATABASE_CA_FILE, 'utf8') } : {}),
+      ...(env.DATABASE_CA_PEM
+        ? { ca: env.DATABASE_CA_PEM }
+        : env.DATABASE_CA_FILE
+          ? { ca: readFileSync(env.DATABASE_CA_FILE, 'utf8') }
+          : {}),
     },
-    max: 2,
+    max: env.APP_ENV === 'pilot' ? 1 : 2,
     connectionTimeoutMillis: 5000,
     idleTimeoutMillis: 10000,
     statement_timeout: 5000,

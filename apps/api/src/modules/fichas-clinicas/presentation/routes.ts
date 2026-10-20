@@ -1,3 +1,4 @@
+import { localOrigins } from '../../../infrastructure/environment.js';
 import express, { type ErrorRequestHandler } from 'express';
 import type { FichaHandler } from '../application/ficha.js';
 export function fichaRoutes(
@@ -6,11 +7,12 @@ export function fichaRoutes(
   read: FichaHandler,
   editLoad: FichaHandler,
   editSave: FichaHandler,
+  origins = localOrigins,
 ) {
   const router = express.Router();
   router.use((req, res, next) => {
     res.set('Cache-Control', 'no-store');
-    if (!['http://127.0.0.1:5173', 'http://localhost:5173'].includes(req.get('origin') ?? '')) {
+    if (!origins.includes(req.get('origin') ?? '')) {
       res.status(403).json({ codigo: 'ORIGEN_NO_PERMITIDO' });
       return;
     }

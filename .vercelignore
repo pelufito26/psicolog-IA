@@ -1,0 +1,9 @@
+.git
+.codex
+.env*
+**/.env*
+**/*.log
+docs
+specs
+scripts
+supabase/.temp

@@ -128,10 +128,11 @@ export class AccessStore {
   async session(
     hash: string,
     now: number,
+    allowedEmail?: string,
   ): Promise<{ usuario: string; profesional: string } | null> {
     const result = await this.pool.query(
-      'update acceso.sesiones s set actividad=$2 from acceso.cuentas a where s.usuario=a.usuario and not a.bloqueada and s.hash=$1 and not s.revocada and s.vence>$2 and s.actividad>$3 returning s.usuario,a.profesional',
-      [hash, now, now - 1800000],
+      'update acceso.sesiones s set actividad=$2 from acceso.cuentas a where s.usuario=a.usuario and not a.bloqueada and s.hash=$1 and not s.revocada and s.vence>$2 and s.actividad>$3 and ($4::text is null or exists (select 1 from psicologia.profesionales p where p.id=a.profesional and lower(trim(p.email))=$4)) returning s.usuario,a.profesional',
+      [hash, now, now - 1800000, allowedEmail ?? null],
     );
     return result.rows[0] ?? null;
   }

@@ -10,6 +10,7 @@ export class AccessService {
     private readonly mail: Mailer,
     private readonly secret: string,
     private readonly clock = () => Date.now(),
+    private readonly allowedEmail?: string,
   ) {}
   csrf(token: string) {
     return createHmac('sha256', this.secret)
@@ -25,6 +26,8 @@ export class AccessService {
     await this.store.limit(this.digest('origen', origin), this.clock(), 30);
   }
   private async send(identity: Identity) {
+    if (this.allowedEmail && identity.email.trim().toLowerCase() !== this.allowedEmail)
+      throw new AccessError(401, 'INGRESO_REQUERIDO');
     await this.store.limit(
       this.digest('cuenta', identity.email.trim().toLowerCase()),
       this.clock(),
@@ -58,6 +61,11 @@ export class AccessService {
     return this.send(identity);
   }
   async verify(token: string, code: string) {
+    if (this.allowedEmail) {
+      const identity = await this.store.pendingIdentity(hash(token), this.clock());
+      if (identity.email.trim().toLowerCase() !== this.allowedEmail)
+        throw new AccessError(401, 'INGRESO_REQUERIDO');
+    }
     const session = opaque();
     await this.store.verify(
       hash(token),
@@ -68,7 +76,7 @@ export class AccessService {
     return session;
   }
   async session(token: string) {
-    return this.store.session(hash(token), this.clock());
+    return this.store.session(hash(token), this.clock(), this.allowedEmail);
   }
   async logout(token: string) {
     await this.store.revoke(hash(token));
