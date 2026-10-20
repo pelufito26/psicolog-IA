@@ -2,6 +2,10 @@ import { expect, test, vi } from 'vitest';
 import { environment, resourceSecret } from './environment.js';
 import { createEditar, type EdicionRepository } from '../modules/pacientes/application/editar.js';
 import { databaseConfig } from './database/connection.js';
+import {
+  createRegistrar,
+  type RegistroRepository,
+} from '../modules/pacientes/application/registrar.js';
 
 export const pilotEnv = {
   NODE_ENV: 'production',
@@ -72,4 +76,34 @@ test('dos instancias editan con versión estable y rechazan cambios obsoletos, a
   expect(resourceSecret(pilotEnv, 'fichas-clinicas')).not.toEqual(
     resourceSecret(pilotEnv, 'pacientes'),
   );
+});
+
+test('confirmación de duplicado sobrevive a otra instancia y mantiene vínculo al profesional y datos', async () => {
+  const register = vi.fn<RegistroRepository['register']>(async (_owner, _data, confirmed) =>
+    confirmed ? { kind: 'created', id: 'ficticio' } : { kind: 'duplicate' },
+  );
+  const data = {
+    nombre: 'Demo',
+    apellido: 'Ficticio',
+    fechaNacimiento: '2000-01-01',
+    telefono: '0000000',
+  };
+  const a = createRegistrar({ register }, 'propietario', {
+    secret: resourceSecret(pilotEnv, 'pacientes'),
+  });
+  const b = createRegistrar({ register }, 'propietario', {
+    secret: resourceSecret({ ...pilotEnv }, 'pacientes'),
+  });
+  const confirmacionDuplicado = (await a(data)).body.confirmacionDuplicado;
+  expect((await b({ ...data, confirmacionDuplicado })).status).toBe(201);
+  const other = createRegistrar({ register }, 'ajeno', {
+    secret: resourceSecret(pilotEnv, 'pacientes'),
+  });
+  expect((await other({ ...data, confirmacionDuplicado })).body.codigo).toBe(
+    'CONFIRMACION_INVALIDA',
+  );
+  expect((await b({ ...data, telefono: '1111111', confirmacionDuplicado })).body.codigo).toBe(
+    'CONFIRMACION_INVALIDA',
+  );
+  expect(register).toHaveBeenCalledTimes(2);
 });
