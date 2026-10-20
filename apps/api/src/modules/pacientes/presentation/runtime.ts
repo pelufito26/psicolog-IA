@@ -1,4 +1,4 @@
-import { randomBytes } from 'node:crypto';
+import { environment, resourceSecret } from '../../../infrastructure/environment.js';
 import { Pool } from 'pg';
 import { databaseConfig } from '../../../infrastructure/database/connection.js';
 import { createRegistrar } from '../application/registrar.js';
@@ -9,17 +9,23 @@ import { createPerfil } from '../application/perfil.js';
 import { PgPerfilRepository } from '../infrastructure/pg-perfil.js';
 import { createEditar } from '../application/editar.js';
 import { PgEdicionRepository } from '../infrastructure/pg-edicion.js';
-export function createRegistrationRuntime(env: NodeJS.ProcessEnv) {
-  let pool: Pool | undefined;
-  const secret = randomBytes(32);
+export function createRegistrationRuntime(env: NodeJS.ProcessEnv, sharedPool?: Pool) {
+  let pool: Pool | undefined = sharedPool;
+  let secret: ReturnType<typeof resourceSecret> | undefined;
+  try {
+    secret = resourceSecret(env, 'pacientes');
+  } catch {
+    /* Fail closed. */
+  }
   const execute = async (
     input: unknown,
     professional: string | undefined,
     operation: 'register' | 'list' | 'profile' | 'editLoad' | 'editSave',
   ) => {
-    if (env.NODE_ENV === 'production' || !professional || !/^[0-9a-f-]{36}$/i.test(professional))
+    if (!secret || !professional || !/^[0-9a-f-]{36}$/i.test(professional))
       return { status: 503, body: { codigo: 'DESARROLLO_NO_CONFIGURADO' } };
     try {
+      environment(env);
       pool ??= new Pool(databaseConfig(env));
       if (operation === 'editLoad' || operation === 'editSave') {
         const edit = createEditar(new PgEdicionRepository(pool), professional, { secret });
@@ -55,7 +61,7 @@ export function createRegistrationRuntime(env: NodeJS.ProcessEnv) {
     editLoad: (input: unknown, professional?: string) => execute(input, professional, 'editLoad'),
     editSave: (input: unknown, professional?: string) => execute(input, professional, 'editSave'),
     close: async () => {
-      await pool?.end();
+      if (!sharedPool) await pool?.end();
     },
   };
 }

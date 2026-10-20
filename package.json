@@ -1,6 +1,7 @@
 {
   "name": "psicologia",
   "private": true,
+  "type": "module",
   "version": "0.0.0",
   "workspaces": [
     "apps/web",
@@ -16,7 +17,7 @@
     "dev:api": "npm run dev --workspace @psicologia/api",
     "preview:web": "npm run preview --workspace @psicologia/web",
     "start:api": "npm run start --workspace @psicologia/api",
-    "typecheck": "npm run typecheck --workspaces",
+    "typecheck": "npm run typecheck --workspaces && tsc --project tsconfig.deploy.json",
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces",
     "lint": "eslint . --max-warnings 0",

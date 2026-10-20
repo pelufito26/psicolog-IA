@@ -1,10 +1,11 @@
+import { localOrigins } from '../../../infrastructure/environment.js';
 import express, { type ErrorRequestHandler } from 'express';
 import type { SesionOperations } from '../application/sesiones.js';
-export function sesionRoutes(operations: SesionOperations) {
+export function sesionRoutes(operations: SesionOperations, origins = localOrigins) {
   const router = express.Router();
   router.use((req, res, next) => {
     res.set('Cache-Control', 'no-store');
-    if (!['http://127.0.0.1:5173', 'http://localhost:5173'].includes(req.get('origin') ?? '')) {
+    if (!origins.includes(req.get('origin') ?? '')) {
       res.status(403).json({ codigo: 'ORIGEN_NO_PERMITIDO' });
       return;
     }

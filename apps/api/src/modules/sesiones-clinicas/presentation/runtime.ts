@@ -1,5 +1,5 @@
+import { environment, resourceSecret } from '../../../infrastructure/environment.js';
 import { Pool } from 'pg';
-import { randomBytes } from 'node:crypto';
 import { createEditarSesion } from '../application/editar-sesion.js';
 import { databaseConfig } from '../../../infrastructure/database/connection.js';
 import {
@@ -8,19 +8,25 @@ import {
   type SesionHandler,
 } from '../application/sesiones.js';
 import { PgSesionRepository } from '../infrastructure/pg-sesiones.js';
-export function createSesionRuntime(env: NodeJS.ProcessEnv) {
-  let pool: Pool | undefined;
-  const secret = randomBytes(32);
+export function createSesionRuntime(env: NodeJS.ProcessEnv, sharedPool?: Pool) {
+  let pool: Pool | undefined = sharedPool;
+  let secret: ReturnType<typeof resourceSecret> | undefined;
+  try {
+    secret = resourceSecret(env, 'sesiones-clinicas');
+  } catch {
+    /* Fail closed. */
+  }
   const execute =
     (key: keyof SesionOperations): SesionHandler =>
     async (input, professional) => {
       if (
-        env.NODE_ENV === 'production' ||
+        !secret ||
         !professional ||
         !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(professional)
       )
         return { status: 503, body: { codigo: 'SESIONES_NO_CONFIGURADAS' } };
       try {
+        environment(env);
         pool ??= new Pool(databaseConfig(env));
         const repository = new PgSesionRepository(pool);
         return await (key === 'load' || key === 'save'
@@ -51,7 +57,7 @@ export function createSesionRuntime(env: NodeJS.ProcessEnv) {
       save: execute('save'),
     },
     close: async () => {
-      await pool?.end();
+      if (!sharedPool) await pool?.end();
     },
   };
 }

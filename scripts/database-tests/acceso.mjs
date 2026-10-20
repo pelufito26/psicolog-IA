@@ -1,3 +1,4 @@
+import { resourceSecret } from '../../apps/api/dist/infrastructure/environment.js';
 import { createEditarSesion } from '../../apps/api/dist/modules/sesiones-clinicas/application/editar-sesion.js';
 import { createSesiones } from '../../apps/api/dist/modules/sesiones-clinicas/application/sesiones.js';
 import { PgSesionRepository } from '../../apps/api/dist/modules/sesiones-clinicas/infrastructure/pg-sesiones.js';
@@ -66,6 +67,8 @@ export async function testAcceso(admin, url) {
     const session = concurrent.find((x) => x.status === 'fulfilled').value;
     const context = await service.session(session);
     assert.ok(context?.profesional);
+    assert.equal((await store.session(hash(session), now, email))?.usuario, context.usuario);
+    assert.equal(await store.session(hash(session), now, email2), null);
     const owner = fake.accounts.get(email).id;
     const same = await Promise.all([
       store.account({ id: owner, email, nombre: 'Demo', apellido: 'Persona' }),
@@ -647,6 +650,28 @@ export async function testAcceso(admin, url) {
       ).response.status,
       400,
     );
+    // Two independently created instances share stable deployment secrets, not process memory.
+    const pilotConfig = {
+      APP_ENV: 'pilot',
+      NODE_ENV: 'production',
+      APP_ORIGIN: 'https://piloto.example.invalid',
+      AUTH_REDIRECT_URL: 'https://piloto.example.invalid/',
+      PILOT_ALLOWED_EMAIL: email,
+      AUTH_SECRET: 'a'.repeat(64),
+      RESOURCE_SIGNING_SECRET: 'b'.repeat(64),
+    };
+    const instanceA = createEditar(new PgEdicionRepository(pool), context.profesional, {
+      secret: resourceSecret(pilotConfig, 'pacientes'),
+    });
+    const instanceB = createEditar(new PgEdicionRepository(pool), context.profesional, {
+      secret: resourceSecret({ ...pilotConfig }, 'pacientes'),
+    });
+    const loaded = await instanceA.load({ id: patientId });
+    assert.equal(loaded.status, 200);
+    const { nombre, apellido, fechaNacimiento, telefono, version } = loaded.body;
+    const editPayload = { id: patientId, nombre, apellido, fechaNacimiento, telefono, version };
+    assert.equal((await instanceB.save(editPayload)).status, 200);
+    assert.equal((await instanceA.save(editPayload)).status, 409);
     await testRecorridoIntegrado(admin, request, one, two);
     const saved = { ...one };
     await request(one, '/api/acceso/salir', {});

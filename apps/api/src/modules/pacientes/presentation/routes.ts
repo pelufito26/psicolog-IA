@@ -1,3 +1,4 @@
+import { localOrigins } from '../../../infrastructure/environment.js';
 import express, { type ErrorRequestHandler } from 'express';
 import type { RegistroHandler } from '../application/registrar.js';
 export type PatientHandler = (input: unknown, professional?: string) => ReturnType<RegistroHandler>;
@@ -7,6 +8,7 @@ export function pacienteRoutes(
   profile: PatientHandler,
   editLoad: PatientHandler,
   editSave: PatientHandler,
+  origins = localOrigins,
 ) {
   const router = express.Router();
   const route = (path: string, handler: PatientHandler) =>
@@ -15,10 +17,7 @@ export function pacienteRoutes(
       (req, res, next) => {
         res.set('Cache-Control', 'no-store');
         const origin = req.get('origin');
-        if (
-          origin !== undefined &&
-          !['http://127.0.0.1:5173', 'http://localhost:5173'].includes(origin)
-        ) {
+        if (origin !== undefined && !origins.includes(origin)) {
           res.status(403).json({ codigo: 'ORIGEN_NO_PERMITIDO' });
           return;
         }

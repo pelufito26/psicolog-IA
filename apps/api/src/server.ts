@@ -1,27 +1,7 @@
-import { createApp } from './app.js';
-import { createRegistrationRuntime } from './modules/pacientes/presentation/runtime.js';
-import { createAccessRuntime } from './modules/acceso/runtime.js';
-import { createFichaRuntime } from './modules/fichas-clinicas/presentation/runtime.js';
-import { createSesionRuntime } from './modules/sesiones-clinicas/presentation/runtime.js';
+import { createRuntime } from './runtime.js';
 
-const runtime = createRegistrationRuntime(process.env);
-const access = createAccessRuntime(process.env);
-const fichas = createFichaRuntime(process.env);
-const sesiones = createSesionRuntime(process.env);
-const server = createApp({
-  sesiones: sesiones.operations,
-  register: runtime.register,
-  list: runtime.list,
-  profile: runtime.profile,
-  editLoad: runtime.editLoad,
-  editSave: runtime.editSave,
-  access: access.http,
-  fichaState: fichas.state,
-  fichaRead: fichas.read,
-  fichaEditLoad: fichas.editLoad,
-  fichaEditSave: fichas.editSave,
-  fichaCreate: fichas.create,
-}).listen(3001, '127.0.0.1', () => {
+const runtime = createRuntime(process.env);
+const server = runtime.app.listen(3001, '127.0.0.1', () => {
   console.log('API local: http://127.0.0.1:3001');
 });
 server.on('error', (error: NodeJS.ErrnoException) => {
@@ -36,9 +16,6 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
   process.once(signal, () =>
     server.close(() => {
       void runtime.close();
-      void access.close();
-      void fichas.close();
-      void sesiones.close();
     }),
   );
 }

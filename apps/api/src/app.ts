@@ -6,6 +6,7 @@ import { sesionRoutes } from './modules/sesiones-clinicas/presentation/routes.js
 import type { SesionOperations } from './modules/sesiones-clinicas/application/sesiones.js';
 export function createApp(
   options: {
+    origins?: string[];
     register?: PatientHandler;
     list?: PatientHandler;
     profile?: PatientHandler;
@@ -47,6 +48,7 @@ export function createApp(
         load: unavailable,
         save: unavailable,
       },
+      options.origins,
     ),
   );
   app.use(
@@ -62,6 +64,7 @@ export function createApp(
         (async () => ({ status: 503, body: { codigo: 'EDICION_NO_DISPONIBLE' } })),
       options.editSave ??
         (async () => ({ status: 503, body: { codigo: 'GUARDADO_NO_CONFIRMADO' } })),
+      options.origins,
     ),
   );
   app.use(
@@ -78,7 +81,11 @@ export function createApp(
         (async () => ({ status: 503, body: { codigo: 'FICHA_NO_CONFIGURADA' } })),
       options.fichaEditSave ??
         (async () => ({ status: 503, body: { codigo: 'GUARDADO_NO_CONFIRMADO' } })),
+      options.origins,
     ),
   );
+  app.use('/api', (_req, res) => {
+    res.set('Cache-Control', 'no-store').status(404).json({ codigo: 'RUTA_NO_DISPONIBLE' });
+  });
   return app;
 }
