@@ -1,6 +1,8 @@
 # Plan de acceso en dos pasos
 
-AUTH-plan-r1 · Spec AUTH-r2 aprobada · T1–T6 aprobados por el usuario mediante «oka dale», después de elegir correo de prueba local. T7 no autorizado.
+Actualización del 20 de octubre de 2026: el piloto T7 ya verificó registro, confirmación, contraseña+código y cierre con servicios reales; recuperación diferida por el usuario y aislamiento remoto entre dos cuentas sin ensayar. Se autorizó consolidar en Git el SQL aplicado, pruebas/evidencia y preparar PR. El plan original siguiente conserva el alcance de la preparación aprobada; no presenta operaciones posteriores como pendientes de autorización ni declara T7 completa. La consolidación no añade operaciones remotas, correos, permisos o despliegue.
+
+AUTH-plan-r1 · Spec AUTH-r2 aprobada · T1–T6 aprobados por el usuario mediante «oka dale», después de elegir correo de prueba local. T7 aprobado posteriormente con alcance acotado en DEC-011; no amplía la autorización a producción.
 
 ## Arquitectura y cierre de bypass
 
