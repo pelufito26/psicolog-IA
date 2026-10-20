@@ -1,6 +1,6 @@
 # Validación CU11
 
-20 de octubre de 2026. CU11-r1 y plan/tareas r1 aprobados mediante «si». Alcance local ficticio; publicación pendiente.
+20 de octubre de 2026. CU11-r1 y plan/tareas r1 aprobados mediante «si». Implementación ficticia local; publicación de CU11 autorizada posteriormente mediante «muy bien, que sigue? vamo y vamo dale».
 
 ## Resultado y evidencia
 
@@ -28,7 +28,7 @@ Harness ficticio API :3001, buzón :3002, Vite :5173, todos loopback; base de de
 
 Capturas fuera de Git: `cu11-detalle-desktop.png` y `cu11-editor-desktop.png`, en carpeta de trabajo.
 
-**Móvil pendiente:** capacidad documentada solicitó 390×844, pero DOM/captura siguieron en 1280×720, incluso en pestaña nueva. Se restauró viewport y cerraron pestañas auxiliares. No se declara validación visual móvil. Se conserva estilo adaptable y textarea al ancho disponible; revisión estática no sustituye esa comprobación.
+**Limitación inicial resuelta:** capacidad documentada solicitó 390×844, pero DOM/captura siguieron en 1280×720, incluso en pestaña nueva. Se restauró viewport y cerraron pestañas auxiliares. En el primer intento no se declaró validación visual móvil. Se conserva estilo adaptable y textarea al ancho disponible; revisión estática no sustituye esa comprobación.
 
 Fallos resueltos:
 
@@ -41,6 +41,12 @@ Fallos resueltos:
 
 `revisor_cu11`, sin contexto conversacional heredado y cumpliendo `.codex/agents/revisor.toml`, revisó base/árbol contra spec/plan/tareas: **sin hallazgos accionables P0–P3**. Incluyó acceso, trigger, HMAC preciso, bloqueo, conflictos/recuperación y navegación/pruebas. Solo lectura estática; sin pruebas ni modificaciones propias. Evidencia final y delta documental comunicados para cierre. No implica aprobación humana ni aptitud productiva.
 
-No ejecutado: móvil por límite indicado, Supabase remoto, correo real, AUTH T7, despliegue, push/PR o CI remota de esta rama. Solo datos ficticios. Cambios ajenos AUTH T7 excluidos del índice/commit; selección parcial de DECISIONS y exclusión de run.mjs.
+No ejecutado: Supabase remoto, correo real, AUTH T7, despliegue o CI remota de esta rama al ejecutar las verificaciones locales. Solo datos ficticios. Cambios ajenos AUTH T7 excluidos del índice/commit; selección parcial de DECISIONS y exclusión de run.mjs.
 
 Hallazgo documental P3 del cierre: T4 aparecia completa pese a movil pendiente. Se separo T4a (cierre local verificado y commit) de T4b (movil pendiente), manteniendo explicito el trabajo no ejecutado.
+
+## Cierre móvil y publicación
+
+En el siguiente turno se aplicó correctamente el viewport 390×844: DOM confirmó innerWidth 390, innerHeight 844 y scrollWidth 375, sin desbordamiento horizontal. Captura inspeccionada: campos/etiquetas y acciones legibles. Se guardaron notas ficticias desde móvil y se verificó confirmación más detalle persistido, fecha/creación conservadas y modificación actualizada. Capturas externas `cu11-editor-movil.png` y `cu11-detalle-movil.png`. Se restauró viewport y cerró buzón auxiliar. T4b completada; no cambia código funcional ni invalida las 363 pruebas/matrices anteriores.
+
+La revisión documental P3 previa queda resuelta y la verificación móvil pendiente ya se realizó. El usuario autorizó avanzar con el PR de CU11; no incluye merge, despliegue ni cambios pendientes de AUTH.
