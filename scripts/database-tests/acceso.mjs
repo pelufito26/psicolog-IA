@@ -1,3 +1,4 @@
+import { createEditarSesion } from '../../apps/api/dist/modules/sesiones-clinicas/application/editar-sesion.js';
 import { createSesiones } from '../../apps/api/dist/modules/sesiones-clinicas/application/sesiones.js';
 import { PgSesionRepository } from '../../apps/api/dist/modules/sesiones-clinicas/infrastructure/pg-sesiones.js';
 import { createEditarFicha } from '../../apps/api/dist/modules/fichas-clinicas/application/editar-ficha.js';
@@ -124,10 +125,12 @@ export async function testAcceso(admin, url) {
     const editing = (professional) =>
       createEditar(new PgEdicionRepository(pool), professional, { secret: editSecret });
     const sesionOperations = Object.fromEntries(
-      ['prepare', 'register', 'check', 'history', 'detail'].map((key) => [
+      ['prepare', 'register', 'check', 'history', 'detail', 'load', 'save'].map((key) => [
         key,
         (data, professional) =>
-          createSesiones(new PgSesionRepository(pool), professional)[key](data),
+          (key === 'load' || key === 'save'
+            ? createEditarSesion(new PgSesionRepository(pool), professional, editSecret)
+            : createSesiones(new PgSesionRepository(pool), professional))[key](data),
       ]),
     );
     const app = createApp({
@@ -184,23 +187,39 @@ export async function testAcceso(admin, url) {
     await request(one, '/api/acceso/estado');
     const profileInput = { id: randomUUID() };
     const fichaInput = { pacienteId: profileInput.id, motivoConsulta: 'Solo prueba ficticia' };
-    const sesionPaths = ['preparar', 'registrar', 'comprobar', 'historial', 'detalle'];
+    const sesionPaths = [
+      'preparar',
+      'registrar',
+      'comprobar',
+      'historial',
+      'detalle',
+      'edicion',
+      'actualizar',
+    ];
     const operationId = randomUUID();
     const sessionPayload = (path, patient, session = profileInput.id) =>
-      path === 'registrar'
+      path === 'actualizar'
         ? {
             pacienteId: patient,
-            operacionId: operationId,
+            sesionId: session,
+            version: 'a'.repeat(43),
             fechaSesion: '2000-01-01',
-            anotacionesClinicas: 'Nota ficticia HTTP',
+            anotacionesClinicas: 'Nota editada ficticia',
           }
-        : path === 'comprobar'
-          ? { pacienteId: patient, operacionId: operationId }
-          : path === 'historial'
-            ? { pacienteId: patient, pagina: 1 }
-            : path === 'detalle'
-              ? { pacienteId: patient, sesionId: session }
-              : { pacienteId: patient };
+        : path === 'registrar'
+          ? {
+              pacienteId: patient,
+              operacionId: operationId,
+              fechaSesion: '2000-01-01',
+              anotacionesClinicas: 'Nota ficticia HTTP',
+            }
+          : path === 'comprobar'
+            ? { pacienteId: patient, operacionId: operationId }
+            : path === 'historial'
+              ? { pacienteId: patient, pagina: 1 }
+              : path === 'detalle' || path === 'edicion'
+                ? { pacienteId: patient, sesionId: session }
+                : { pacienteId: patient };
     const sessionUnauthorized = async (jar) => {
       for (const path of sesionPaths)
         assert.equal(
@@ -362,6 +381,34 @@ export async function testAcceso(admin, url) {
     );
     assert.equal(ownSession.body.sesion.anotacionesClinicas, 'Nota ficticia HTTP');
 
+    const sessionEdit = await request(
+      one,
+      '/api/sesiones-clinicas/edicion',
+      sessionPayload('edicion', patientId, sessionSaved.body.id),
+    );
+    assert.equal(sessionEdit.response.status, 200);
+    const updateSession = {
+      ...sessionPayload('actualizar', patientId, sessionSaved.body.id),
+      version: sessionEdit.body.sesion.version,
+    };
+    assert.equal(
+      (await request(one, '/api/sesiones-clinicas/actualizar', updateSession)).response.status,
+      200,
+    );
+    assert.equal(
+      (await request(one, '/api/sesiones-clinicas/actualizar', updateSession)).response.status,
+      409,
+    );
+    assert.equal(
+      (
+        await request(
+          one,
+          '/api/sesiones-clinicas/detalle',
+          sessionPayload('detalle', patientId, sessionSaved.body.id),
+        )
+      ).body.sesion.anotacionesClinicas,
+      'Nota editada ficticia',
+    );
     const fichaOwn = { ...fichaInput, pacienteId: patientId };
     const readInput = { pacienteId: patientId };
     const emptyRead = await request(one, '/api/fichas-clinicas/consultar', readInput);

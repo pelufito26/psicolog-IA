@@ -14,6 +14,8 @@ beforeEach(async () => {
       check: handler,
       history: handler,
       detail: handler,
+      load: handler,
+      save: handler,
     },
     access: {
       router: express.Router(),
@@ -31,7 +33,7 @@ beforeEach(async () => {
 afterEach(
   () => new Promise<void>((resolve, reject) => server.close((e) => (e ? reject(e) : resolve()))),
 );
-test.each(['preparar', 'registrar', 'comprobar', 'historial', 'detalle'])(
+test.each(['preparar', 'registrar', 'comprobar', 'historial', 'detalle', 'edicion', 'actualizar'])(
   'ruta %s conserva protecciones y no-store',
   async (path) => {
     for (const [origin, type, body, status] of [
@@ -60,7 +62,15 @@ test.each(['preparar', 'registrar', 'comprobar', 'historial', 'detalle'])(
 test('runtime sin contexto/conexión o producción falla cerrado', async () => {
   for (const env of [{}, { NODE_ENV: 'production' }]) {
     const r = createSesionRuntime(env);
-    for (const key of ['prepare', 'register', 'check', 'history', 'detail'] as const) {
+    for (const key of [
+      'prepare',
+      'register',
+      'check',
+      'history',
+      'detail',
+      'load',
+      'save',
+    ] as const) {
       expect((await r.operations[key]({})).status).toBe(503);
       expect((await r.operations[key]({}, '12345678-1234-4234-8234-123456789abc')).status).toBe(
         503,

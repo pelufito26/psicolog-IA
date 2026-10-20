@@ -6,6 +6,7 @@ import {
   operationSessionId,
 } from '../../apps/api/dist/modules/sesiones-clinicas/application/sesiones.js';
 import { PgSesionRepository } from '../../apps/api/dist/modules/sesiones-clinicas/infrastructure/pg-sesiones.js';
+import { createEditarSesion } from '../../apps/api/dist/modules/sesiones-clinicas/application/editar-sesion.js';
 export async function testSesiones(admin, url) {
   const professionals = [randomUUID(), randomUUID()],
     patients = [];
@@ -159,8 +160,88 @@ export async function testSesiones(admin, url) {
       operationSessionId(professionals[0], patients[0], input.operacionId),
       operationSessionId(professionals[1], patients[0], input.operacionId),
     );
+    const edit = createEditarSesion(repo, professionals[0], Buffer.alloc(32, 4)),
+      foreignEdit = createEditarSesion(repo, professionals[1], Buffer.alloc(32, 4)),
+      editInput = { pacienteId: patients[0], sesionId: id };
+    const loaded = await edit.load(editInput);
+    assert.equal(loaded.status, 200);
+    const replacement = {
+      ...editInput,
+      version: loaded.body.sesion.version,
+      fechaSesion: '2025-01-01',
+      anotacionesClinicas: '  <b>Edición ficticia</b>\n  texto  ',
+    };
+    for (const service of [edit, foreignEdit]) {
+      const missing = await service.load({ ...editInput, sesionId: absent });
+      assert.equal(missing.status, 404);
+      assert.deepEqual(await service.load({ ...editInput, pacienteId: patients[1] }), missing);
+      if (service === foreignEdit) {
+        assert.deepEqual(await service.load(editInput), missing);
+        assert.deepEqual(await service.save(replacement), missing);
+      }
+    }
+    const updates = await Promise.all([
+      edit.save(replacement),
+      edit.save({ ...replacement, anotacionesClinicas: 'Otro editor' }),
+    ]);
+    assert.deepEqual(updates.map((x) => x.status).sort(), [200, 409]);
+    const edited = await s.detail(editInput);
+    assert.equal(edited.body.sesion.id, id);
+    assert.equal(edited.body.sesion.fechaCreacion, detail.body.sesion.fechaCreacion);
+    assert.deepEqual(edited.body.sesion.profesional, detail.body.sesion.profesional);
+    assert.notEqual(
+      edited.body.sesion.fechaUltimaModificacion,
+      detail.body.sesion.fechaUltimaModificacion,
+    );
+    assert.equal((await s.history({ pacienteId: patients[0], pagina: 1 })).body.sesiones[0].id, id);
+    const afterEdit = await snapshot();
+    assert.deepEqual(
+      afterEdit.filter((x) => x.id !== id),
+      stored.filter((x) => x.id !== id),
+    );
+    assert.deepEqual(await unchanged(), before);
+    assert.equal((await s.register(input)).status, 409);
+    await s.check({ pacienteId: patients[0], operacionId: input.operacionId });
+    await edit.load(editInput);
+    assert.deepEqual(await snapshot(), afterEdit);
+    await assert.rejects(
+      repo.update(
+        professionals[0],
+        patients[0],
+        id,
+        { fechaSesion: '2001-01-01', anotacionesClinicas: ' ' },
+        () => true,
+      ),
+      (e) => e.code === '23514',
+    );
+    assert.deepEqual(await snapshot(), afterEdit);
+    assert.equal((await pool.query('select id from psicologia.sesiones_clinicas')).rowCount, 0);
+    // Same millisecond, different microsecond: fixture bypass is restricted to this transaction.
+    async function preciseStamp(value) {
+      await admin.query('BEGIN');
+      try {
+        await admin.query('SET LOCAL session_replication_role=replica');
+        await admin.query(
+          'update psicologia.sesiones_clinicas set fecha_ultima_modificacion=$2 where id=$1',
+          [id, value],
+        );
+        await admin.query('COMMIT');
+      } catch (e) {
+        await admin.query('ROLLBACK');
+        throw e;
+      }
+    }
+    await preciseStamp('2026-10-20T12:00:00.123456Z');
+    const precise = await edit.load(editInput);
+    await preciseStamp('2026-10-20T12:00:00.123457Z');
+    const preciseBefore = await snapshot();
+    assert.equal(
+      (await edit.save({ ...replacement, version: precise.body.sesion.version })).status,
+      409,
+    );
+    assert.deepEqual(await snapshot(), preciseBefore);
     console.log(
-      'CU08–CU10 PostgreSQL: paciente sin ficha, reenvío concurrente/reinicio, nuevas sesiones iguales, historial/empates/páginas, detalle, aislamiento y rollback aprobados.',
+      'CU08–CU11 PostgreSQL: alta/reenvío, historial, edición antigua y concurrente, precisión microsegundos, orden, inmutables, aislamiento y rollback aprobados.',
     );
   } finally {
     await pool.end();

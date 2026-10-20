@@ -44,6 +44,8 @@ export function createApp(
         check: unavailable,
         history: unavailable,
         detail: unavailable,
+        load: unavailable,
+        save: unavailable,
       },
     ),
   );

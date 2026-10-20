@@ -1,3 +1,4 @@
+import { createEditarSesion } from '../../apps/api/dist/modules/sesiones-clinicas/application/editar-sesion.js';
 import { createSesiones } from '../../apps/api/dist/modules/sesiones-clinicas/application/sesiones.js';
 import { PgSesionRepository } from '../../apps/api/dist/modules/sesiones-clinicas/infrastructure/pg-sesiones.js';
 import { createEditarFicha } from '../../apps/api/dist/modules/fichas-clinicas/application/editar-ficha.js';
@@ -70,9 +71,12 @@ try {
   const edit = (professional) =>
     createEditar(new PgEdicionRepository(pool), professional, { secret: editSecret });
   const sesionOperations = Object.fromEntries(
-    ['prepare', 'register', 'check', 'history', 'detail'].map((key) => [
+    ['prepare', 'register', 'check', 'history', 'detail', 'load', 'save'].map((key) => [
       key,
-      (data, professional) => createSesiones(new PgSesionRepository(pool), professional)[key](data),
+      (data, professional) =>
+        (key === 'load' || key === 'save'
+          ? createEditarSesion(new PgSesionRepository(pool), professional, editSecret)
+          : createSesiones(new PgSesionRepository(pool), professional))[key](data),
     ]),
   );
   const app = createApp({

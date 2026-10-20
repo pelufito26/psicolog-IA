@@ -8,9 +8,11 @@ import {
 } from './client';
 import { RegistrarSesion } from './RegistrarSesion';
 import { DetalleSesion } from './DetalleSesion';
+import type { SesionEditor } from './edit-client';
 export function HistorialSesiones(props: {
   pacienteId: string;
   api?: SesionAPI;
+  editor?: SesionEditor;
   onBack: () => void;
 }) {
   return <Historial key={props.pacienteId} {...props} />;
@@ -18,10 +20,12 @@ export function HistorialSesiones(props: {
 function Historial({
   pacienteId,
   api = sesionAPI,
+  editor,
   onBack,
 }: {
   pacienteId: string;
   api?: SesionAPI;
+  editor?: SesionEditor;
   onBack: () => void;
 }) {
   const [page, setPage] = useState(1),
@@ -83,6 +87,7 @@ function Historial({
       <DetalleSesion
         pacienteId={pacienteId}
         sesionId={selected}
+        editor={editor}
         api={api}
         notice={notice}
         onBack={() => {

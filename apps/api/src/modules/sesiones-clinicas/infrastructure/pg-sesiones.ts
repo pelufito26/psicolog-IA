@@ -6,7 +6,8 @@ import type {
   DetalleSesion,
 } from '../application/sesiones.js';
 import type { DatosSesion } from '../domain/sesion.js';
-export class PgSesionRepository implements SesionRepository {
+import type { EditSesionRepository, EdicionSesion } from '../application/editar-sesion.js';
+export class PgSesionRepository implements SesionRepository, EditSesionRepository {
   constructor(private readonly pool: Pool) {}
   private async tx<T>(
     professional: string,
@@ -44,6 +45,47 @@ export class PgSesionRepository implements SesionRepository {
   }
   prepare(professional: string, patient: string) {
     return this.tx(professional, false, (c) => this.patient(c, professional, patient));
+  }
+  loadEdit(professional: string, patient: string, id: string) {
+    return this.tx(professional, false, async (c) => {
+      const result = await c.query<EdicionSesion>(
+        `select p.id as "pacienteId",p.nombre,p.apellido,
+        json_build_object('id',s.id,'fechaSesion',to_char(s.fecha_sesion,'YYYY-MM-DD'),
+        'profesional',json_build_object('nombre',r.nombre,'apellido',r.apellido),
+        'anotacionesClinicas',s.anotaciones_clinicas,'stamp',s.fecha_ultima_modificacion::text) as sesion
+        from psicologia.sesiones_clinicas s join psicologia.pacientes p on p.id=s.paciente_id
+        join psicologia.profesionales r on r.id=s.profesional_id
+        where s.id=$1 and p.id=$2 and p.profesional_id=$3 and s.profesional_id=$3`,
+        [id, patient, professional],
+      );
+      return result.rows[0] ?? null;
+    });
+  }
+  update(
+    professional: string,
+    patient: string,
+    id: string,
+    data: DatosSesion,
+    matches: (stamp: string) => boolean,
+  ): ReturnType<EditSesionRepository['update']> {
+    return this.tx(professional, true, async (c) => {
+      const row = (
+        await c.query<{ stamp: string }>(
+          `select s.fecha_ultima_modificacion::text as stamp from psicologia.sesiones_clinicas s
+        join psicologia.pacientes p on p.id=s.paciente_id
+        where s.id=$1 and p.id=$2 and p.profesional_id=$3 and s.profesional_id=$3 for update of s`,
+          [id, patient, professional],
+        )
+      ).rows[0];
+      if (!row) return 'missing';
+      if (!matches(row.stamp)) return 'conflict';
+      await c.query(
+        `update psicologia.sesiones_clinicas set fecha_sesion=$4,anotaciones_clinicas=$5
+        where id=$1 and paciente_id=$2 and profesional_id=$3`,
+        [id, patient, professional, data.fechaSesion, data.anotacionesClinicas],
+      );
+      return 'updated';
+    });
   }
   register(
     professional: string,
