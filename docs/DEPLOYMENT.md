@@ -1,6 +1,6 @@
 # Piloto online en Vercel
 
-Estado: piloto desplegado en https://psicologia-piloto.vercel.app, API/configuración anónima verificadas; aceptación del login y recorrido online pendientes. Especificación y alcance: specs/015-piloto-vercel/. Solo pacientes ficticios; acceso inicial limitado a la cuenta profesional autorizada. Recuperación real pendiente. No representa habilitación para uso clínico productivo.
+Estado: piloto desplegado en https://psicologia-piloto.vercel.app, API/configuración anónima verificadas; ingreso real online confirmado; recorrido clínico y logout online diferidos por el usuario. Especificación y alcance: specs/015-piloto-vercel/. Solo pacientes ficticios; acceso inicial limitado a la cuenta profesional autorizada. Recuperación real pendiente. No representa habilitación para uso clínico productivo.
 
 ## Arquitectura y entrega
 

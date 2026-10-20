@@ -1,6 +1,6 @@
 # Evidencia del piloto Vercel
 
-Estado vigente: piloto online configurado en https://psicologia-piloto.vercel.app; T5 completada, T6 pendiente del ingreso personal y recorrido. Las secciones de preparación conservan la secuencia de fallos y comprobaciones; la habilitación final se detalla al cierre del documento. Base: origin/main 6eff8944faadba2a1d68f27c2ff2f4439bb65ca5. Revisiones VERCEL-r1 y VERCEL-plan-r1/VERCEL-tasks-r1 aprobadas en conversación el 20 de octubre de 2026.
+Estado vigente: piloto online configurado en https://psicologia-piloto.vercel.app; T5 completada, ingreso personal online confirmado y T6 parcial; recorrido clínico y logout online diferidos por el usuario. Las secciones de preparación conservan la secuencia de fallos y comprobaciones; la habilitación final se detalla al cierre del documento. Base: origin/main 6eff8944faadba2a1d68f27c2ff2f4439bb65ca5. Revisiones VERCEL-r1 y VERCEL-plan-r1/VERCEL-tasks-r1 aprobadas en conversación el 20 de octubre de 2026.
 
 ## Verificaciones locales
 
@@ -73,3 +73,13 @@ Comprobaciones HTTP sobre alias estable con sesión anónima creada solo para pr
 - Ingreso con identidad ficticia fuera de la cuenta admitida: 401 CREDENCIALES_INVALIDAS, sin invocar identidad/correo según el control probado localmente.
 
 Lectura del proveedor antes de solicitar login al usuario: cuatro mensajes al destinatario aprobado, cuatro entregados; el conteo previo histórico era dos y no se atribuye aquí el origen de la diferencia. Se toma conservadoramente ese conteo para el presupuesto: quedan dos de los seis autorizados. El agente no envió registros, recuperación ni códigos en estas comprobaciones. Se pidió un único ingreso personal en la URL online, con aviso antes de reenviar. Login/código reales online, CU01–CU11, móvil/otro dispositivo y logout todavía pendientes de la intervención del usuario. No se inspeccionan contraseña, OTP ni sesión real del navegador mientras completa ese paso.
+
+## Ingreso online confirmado y recorrido diferido
+
+El usuario respondió «Sí, ingresé y veo mis pacientes» al pedido de ingresar en la URL Vercel con su cuenta existente y código por correo. Verificación adicional de solo lectura: una sesión vigente, una revocada; cinco mensajes al destinatario aprobado, cinco entregados. No se leyeron contraseñas, códigos, tokens ni cookies de su navegador. Se conserva conservadoramente un correo restante del presupuesto total de seis; no usarlo automáticamente.
+
+La pestaña original ya no estaba disponible en el navegador compartido. Una nueva pestaña del mismo piloto mostró Ingresar, por lo que no se afirmó acceso a la sesión real que el usuario abrió en otro navegador. Se propuso un recorrido manual con el paciente ficticio PruebaVercel, ficha, sesión, recarga y logout. El usuario eligió expresamente «Prefiero probarlo después». No se creó ese paciente ni se ejecutaron escrituras clínicas o logout remoto en su nombre. El ejemplo es un guion pendiente, no un registro persistido ni evidencia de aceptación.
+
+Comprobación adicional limitada a la pantalla anónima: viewport DOM 390x844, scrollWidth 375 (sin desbordamiento horizontal en esa medición). La captura del navegador no ofrece correspondencia visual suficiente con esas dimensiones, por lo que no se usa como aceptación móvil. Se restauró el viewport. No se probó el recorrido clínico en móvil ni en otro dispositivo; tampoco logout online o persistencia de nuevos registros después de recargar. Las matrices locales y el logout local previo conservan su evidencia, sin sustituir estas comprobaciones remotas pendientes.
+
+Estado de aceptación: V1–V6 tienen configuración/controles técnicos descritos y login real online corroborado por el usuario y conteos, sin completar automáticamente todas sus variantes. V7/T6 sigue parcial por decisión del usuario; V8 registra esta limitación. Piloto disponible con pacientes ficticios; no aceptación productiva, no pacientes reales y AUTH T7 sigue parcial por recuperación diferida y ausencia de dos cuentas reales.
