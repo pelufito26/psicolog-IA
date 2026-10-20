@@ -2,11 +2,14 @@ import { createApp } from './app.js';
 import { createRegistrationRuntime } from './modules/pacientes/presentation/runtime.js';
 import { createAccessRuntime } from './modules/acceso/runtime.js';
 import { createFichaRuntime } from './modules/fichas-clinicas/presentation/runtime.js';
+import { createSesionRuntime } from './modules/sesiones-clinicas/presentation/runtime.js';
 
 const runtime = createRegistrationRuntime(process.env);
 const access = createAccessRuntime(process.env);
 const fichas = createFichaRuntime(process.env);
+const sesiones = createSesionRuntime(process.env);
 const server = createApp({
+  sesiones: sesiones.operations,
   register: runtime.register,
   list: runtime.list,
   profile: runtime.profile,
@@ -35,6 +38,7 @@ for (const signal of ['SIGINT', 'SIGTERM'] as const) {
       void runtime.close();
       void access.close();
       void fichas.close();
+      void sesiones.close();
     }),
   );
 }

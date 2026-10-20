@@ -1,3 +1,5 @@
+import { createSesiones } from '../../apps/api/dist/modules/sesiones-clinicas/application/sesiones.js';
+import { PgSesionRepository } from '../../apps/api/dist/modules/sesiones-clinicas/infrastructure/pg-sesiones.js';
 import { createEditarFicha } from '../../apps/api/dist/modules/fichas-clinicas/application/editar-ficha.js';
 // Explicit harness: fictitious identities and email only, isolated disposable DB.
 import { Client, Pool } from 'pg';
@@ -60,14 +62,21 @@ try {
       fake.mail,
       randomUUID() + randomUUID(),
     );
-  if (process.env.AUTH_TEST_FIXTURE === 'perfil') {
+  if (['perfil', 'sesiones'].includes(process.env.AUTH_TEST_FIXTURE)) {
     const { seedPerfil } = await import('./perfil-fixture.mjs');
-    await seedPerfil(fake, pool);
+    await seedPerfil(fake, pool, process.env.AUTH_TEST_FIXTURE === 'sesiones');
   }
   const editSecret = randomBytes(32);
   const edit = (professional) =>
     createEditar(new PgEdicionRepository(pool), professional, { secret: editSecret });
+  const sesionOperations = Object.fromEntries(
+    ['prepare', 'register', 'check', 'history', 'detail'].map((key) => [
+      key,
+      (data, professional) => createSesiones(new PgSesionRepository(pool), professional)[key](data),
+    ]),
+  );
   const app = createApp({
+    sesiones: sesionOperations,
     fichaEditLoad: (data, professional) =>
       createEditarFicha(new PgFichaRepository(pool), professional, editSecret).load(data),
     fichaEditSave: (data, professional) =>

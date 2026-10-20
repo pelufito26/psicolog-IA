@@ -2,6 +2,8 @@ import express, { type RequestHandler } from 'express';
 import { pacienteRoutes, type PatientHandler } from './modules/pacientes/presentation/routes.js';
 import { fichaRoutes } from './modules/fichas-clinicas/presentation/routes.js';
 import type { FichaHandler } from './modules/fichas-clinicas/application/ficha.js';
+import { sesionRoutes } from './modules/sesiones-clinicas/presentation/routes.js';
+import type { SesionOperations } from './modules/sesiones-clinicas/application/sesiones.js';
 export function createApp(
   options: {
     register?: PatientHandler;
@@ -14,6 +16,7 @@ export function createApp(
     fichaEditLoad?: FichaHandler;
     fichaEditSave?: FichaHandler;
     fichaCreate?: FichaHandler;
+    sesiones?: SesionOperations;
     access?: { router: express.Router; guard: RequestHandler };
   } = {},
 ) {
@@ -30,6 +33,20 @@ export function createApp(
     ((_req, res) => {
       res.set('Cache-Control', 'no-store').status(401).json({ codigo: 'INGRESO_REQUERIDO' });
     });
+  const unavailable = async () => ({ status: 503, body: { codigo: 'SESIONES_NO_CONFIGURADAS' } });
+  app.use(
+    '/api/sesiones-clinicas',
+    guard,
+    sesionRoutes(
+      options.sesiones ?? {
+        prepare: unavailable,
+        register: unavailable,
+        check: unavailable,
+        history: unavailable,
+        detail: unavailable,
+      },
+    ),
+  );
   app.use(
     '/api/pacientes',
     guard,

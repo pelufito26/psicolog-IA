@@ -1,3 +1,5 @@
+import { createSesiones } from '../../apps/api/dist/modules/sesiones-clinicas/application/sesiones.js';
+import { PgSesionRepository } from '../../apps/api/dist/modules/sesiones-clinicas/infrastructure/pg-sesiones.js';
 import { createEditarFicha } from '../../apps/api/dist/modules/fichas-clinicas/application/editar-ficha.js';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
@@ -121,7 +123,15 @@ export async function testAcceso(admin, url) {
     const editSecret = Buffer.alloc(32, 9);
     const editing = (professional) =>
       createEditar(new PgEdicionRepository(pool), professional, { secret: editSecret });
+    const sesionOperations = Object.fromEntries(
+      ['prepare', 'register', 'check', 'history', 'detail'].map((key) => [
+        key,
+        (data, professional) =>
+          createSesiones(new PgSesionRepository(pool), professional)[key](data),
+      ]),
+    );
     const app = createApp({
+      sesiones: sesionOperations,
       fichaEditLoad: (data, professional) =>
         createEditarFicha(new PgFichaRepository(pool), professional, editSecret).load(data),
       fichaEditSave: (data, professional) =>
@@ -174,6 +184,38 @@ export async function testAcceso(admin, url) {
     await request(one, '/api/acceso/estado');
     const profileInput = { id: randomUUID() };
     const fichaInput = { pacienteId: profileInput.id, motivoConsulta: 'Solo prueba ficticia' };
+    const sesionPaths = ['preparar', 'registrar', 'comprobar', 'historial', 'detalle'];
+    const operationId = randomUUID();
+    const sessionPayload = (path, patient, session = profileInput.id) =>
+      path === 'registrar'
+        ? {
+            pacienteId: patient,
+            operacionId: operationId,
+            fechaSesion: '2000-01-01',
+            anotacionesClinicas: 'Nota ficticia HTTP',
+          }
+        : path === 'comprobar'
+          ? { pacienteId: patient, operacionId: operationId }
+          : path === 'historial'
+            ? { pacienteId: patient, pagina: 1 }
+            : path === 'detalle'
+              ? { pacienteId: patient, sesionId: session }
+              : { pacienteId: patient };
+    const sessionUnauthorized = async (jar) => {
+      for (const path of sesionPaths)
+        assert.equal(
+          (
+            await request(
+              jar,
+              '/api/sesiones-clinicas/' + path,
+              sessionPayload(path, profileInput.id),
+            )
+          ).response.status,
+          401,
+        );
+    };
+
+    await sessionUnauthorized(one);
     for (const path of ['/estado', '/crear', '/consultar', '/edicion', '/actualizar'])
       assert.equal(
         (await request(one, '/api/fichas-clinicas' + path, fichaInput)).response.status,
@@ -232,6 +274,7 @@ export async function testAcceso(admin, url) {
       401,
     );
     const codeOne = fake.outbox.at(-1).code;
+    await sessionUnauthorized(one);
     for (const path of ['/estado', '/crear', '/consultar', '/edicion', '/actualizar'])
       assert.equal(
         (await request(one, '/api/fichas-clinicas' + path, fichaInput)).response.status,
@@ -256,6 +299,69 @@ export async function testAcceso(admin, url) {
     const createdPatient = await request(one, '/api/pacientes', patient);
     assert.equal(createdPatient.response.status, 201);
     const patientId = createdPatient.body.id;
+    const sessionEmpty = await request(
+      one,
+      '/api/sesiones-clinicas/historial',
+      sessionPayload('historial', patientId),
+    );
+    assert.equal(sessionEmpty.response.status, 200);
+    assert.deepEqual(sessionEmpty.body.sesiones, []);
+    for (const path of sesionPaths)
+      for (const headers of [{ 'x-csrf-token': 'falso' }, { origin: 'https://ajeno.invalid' }])
+        assert.equal(
+          (
+            await request(
+              one,
+              '/api/sesiones-clinicas/' + path,
+              sessionPayload(path, patientId),
+              headers,
+            )
+          ).response.status,
+          403,
+        );
+    assert.equal(
+      (
+        await request(one, '/api/sesiones-clinicas/registrar', {
+          ...sessionPayload('registrar', patientId),
+          profesional: 'otro',
+        })
+      ).response.status,
+      400,
+    );
+    const sessionSaved = await request(
+      one,
+      '/api/sesiones-clinicas/registrar',
+      sessionPayload('registrar', patientId),
+    );
+    assert.equal(sessionSaved.response.status, 201);
+    assert.equal(sessionSaved.response.headers.get('cache-control'), 'no-store');
+    assert.equal(
+      (
+        await request(
+          one,
+          '/api/sesiones-clinicas/registrar',
+          sessionPayload('registrar', patientId),
+        )
+      ).response.status,
+      200,
+    );
+    assert.equal(
+      (
+        await request(
+          one,
+          '/api/sesiones-clinicas/comprobar',
+          sessionPayload('comprobar', patientId),
+        )
+      ).body.id,
+      sessionSaved.body.id,
+    );
+    const ownSession = await request(
+      one,
+      '/api/sesiones-clinicas/detalle',
+      sessionPayload('detalle', patientId, sessionSaved.body.id),
+    );
+    assert.equal(ownSession.body.sesion.anotacionesClinicas, 'Nota ficticia HTTP');
+
     const fichaOwn = { ...fichaInput, pacienteId: patientId };
     const readInput = { pacienteId: patientId };
     const emptyRead = await request(one, '/api/fichas-clinicas/consultar', readInput);
@@ -407,6 +513,22 @@ export async function testAcceso(admin, url) {
     await request(two, '/api/acceso/ingresar', { email: email2, password: registration.password });
     await request(two, '/api/acceso/verificar', { codigo: fake.outbox.at(-1).code });
     const foreignProfile = await request(two, '/api/pacientes/perfil', { id: patientId });
+    for (const path of sesionPaths) {
+      const foreign = await request(
+        two,
+        '/api/sesiones-clinicas/' + path,
+        sessionPayload(path, patientId, sessionSaved.body.id),
+      );
+      const absent = await request(
+        two,
+        '/api/sesiones-clinicas/' + path,
+        sessionPayload(path, profileInput.id, profileInput.id),
+      );
+      assert.equal(foreign.response.status, 404);
+      assert.equal(absent.response.status, 404);
+      assert.deepEqual(foreign.body, absent.body);
+    }
+
     for (const path of ['/estado', '/crear', '/consultar', '/edicion', '/actualizar']) {
       const payload =
         path === '/actualizar'
@@ -484,6 +606,7 @@ export async function testAcceso(admin, url) {
       401,
     );
     now += 1800001;
+    for (const jar of [saved, two]) await sessionUnauthorized(jar);
     for (const jar of [saved, two])
       for (const path of ['/estado', '/crear', '/consultar', '/edicion', '/actualizar'])
         assert.equal(

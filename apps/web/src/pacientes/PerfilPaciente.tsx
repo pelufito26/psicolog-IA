@@ -13,6 +13,8 @@ import type { FichaAPI } from '../fichas-clinicas/client';
 import { ConsultarFicha } from '../fichas-clinicas/ConsultarFicha';
 import type { ConsultarFicha as FichaLoader } from '../fichas-clinicas/consulta-client';
 import type { FichaEditor } from '../fichas-clinicas/edit-client';
+import { HistorialSesiones } from '../sesiones-clinicas/HistorialSesiones';
+import type { SesionAPI } from '../sesiones-clinicas/client';
 export function PerfilPaciente({
   id,
   load = consultarPerfil,
@@ -21,6 +23,7 @@ export function PerfilPaciente({
   fichas,
   fichaLoad,
   fichaEditor,
+  sesiones,
 }: {
   id: string;
   load?: ConsultarPerfil;
@@ -29,11 +32,13 @@ export function PerfilPaciente({
   fichas?: FichaAPI;
   fichaLoad?: FichaLoader;
   fichaEditor?: FichaEditor;
+  sesiones?: SesionAPI;
 }) {
   const [revision, setRevision] = useState(0);
   const [editing, setEditing] = useState(false);
   const [creatingFicha, setCreatingFicha] = useState(false);
   const [readingFicha, setReadingFicha] = useState(false);
+  const [readingSesiones, setReadingSesiones] = useState(false);
   const [notice, setNotice] = useState('');
   const [result, setResult] = useState<{
     id: string;
@@ -44,9 +49,9 @@ export function PerfilPaciente({
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     heading.current?.focus();
-  }, [id, editing, creatingFicha, readingFicha]);
+  }, [id, editing, creatingFicha, readingFicha, readingSesiones]);
   useEffect(() => {
-    if (editing || creatingFicha || readingFicha) return;
+    if (editing || creatingFicha || readingFicha || readingSesiones) return;
     const controller = new AbortController();
     let active = true;
     load(id, controller.signal).then(
@@ -66,9 +71,20 @@ export function PerfilPaciente({
       active = false;
       controller.abort();
     };
-  }, [id, load, revision, editing, creatingFicha, readingFicha]);
+  }, [id, load, revision, editing, creatingFicha, readingFicha, readingSesiones]);
   const current = result?.id === id && result.revision === revision ? result : undefined;
   const data = current?.data;
+  if (readingSesiones)
+    return (
+      <HistorialSesiones
+        pacienteId={id}
+        api={sesiones}
+        onBack={() => {
+          setReadingSesiones(false);
+          setRevision((r) => r + 1);
+        }}
+      />
+    );
   if (readingFicha)
     return (
       <ConsultarFicha
@@ -173,6 +189,18 @@ export function PerfilPaciente({
             setCreatingFicha(true);
           }}
         />
+      )}
+      {data && (
+        <div className="actions">
+          <button
+            onClick={() => {
+              setNotice('');
+              setReadingSesiones(true);
+            }}
+          >
+            Sesiones clínicas
+          </button>
+        </div>
       )}
     </section>
   );
