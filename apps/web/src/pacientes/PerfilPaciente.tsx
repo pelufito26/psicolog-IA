@@ -12,6 +12,7 @@ import { CrearFicha } from '../fichas-clinicas/CrearFicha';
 import type { FichaAPI } from '../fichas-clinicas/client';
 import { ConsultarFicha } from '../fichas-clinicas/ConsultarFicha';
 import type { ConsultarFicha as FichaLoader } from '../fichas-clinicas/consulta-client';
+import type { FichaEditor } from '../fichas-clinicas/edit-client';
 export function PerfilPaciente({
   id,
   load = consultarPerfil,
@@ -19,6 +20,7 @@ export function PerfilPaciente({
   editor,
   fichas,
   fichaLoad,
+  fichaEditor,
 }: {
   id: string;
   load?: ConsultarPerfil;
@@ -26,6 +28,7 @@ export function PerfilPaciente({
   editor?: Editor;
   fichas?: FichaAPI;
   fichaLoad?: FichaLoader;
+  fichaEditor?: FichaEditor;
 }) {
   const [revision, setRevision] = useState(0);
   const [editing, setEditing] = useState(false);
@@ -72,6 +75,7 @@ export function PerfilPaciente({
         key={id}
         pacienteId={id}
         load={fichaLoad}
+        editor={fichaEditor}
         onBack={() => {
           setReadingFicha(false);
           setRevision((r) => r + 1);

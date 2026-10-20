@@ -48,7 +48,8 @@ test('lectura completa, texto literal y fechas Montevideo sin controles de escri
   expect(times[0].textContent).toMatch(/18\/10\/2026.*22:30/);
   expect(times[1].textContent).toMatch(/18\/10\/2026.*23:00/);
   expect(screen.queryByRole('textbox')).toBeNull();
-  expect(screen.queryByRole('button', { name: /guardar|editar/i })).toBeNull();
+  expect(screen.queryByRole('button', { name: /guardar/i })).toBeNull();
+  expect(screen.getByRole('button', { name: 'Editar ficha clínica' })).toBeTruthy();
   fireEvent.click(screen.getByRole('button', { name: 'Volver al perfil' }));
   expect(back).toHaveBeenCalledOnce();
 });

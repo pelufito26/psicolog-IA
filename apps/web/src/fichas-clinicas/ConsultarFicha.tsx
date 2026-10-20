@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { labelsFicha, PacienteFichaNoDisponible } from './client';
+import { EditarFicha } from './EditarFicha';
+import type { FichaEditor } from './edit-client';
 import {
   consultarFicha,
   type ConsultarFicha as Loader,
@@ -19,12 +21,16 @@ export function ConsultarFicha({
   pacienteId,
   load = consultarFicha,
   onBack,
+  editor,
 }: {
   pacienteId: string;
   load?: Loader;
   onBack: () => void;
+  editor?: FichaEditor;
 }) {
   const [revision, setRevision] = useState(0);
+  const [editing, setEditing] = useState(false),
+    [notice, setNotice] = useState('');
   const [result, setResult] = useState<{
     id: string;
     revision: number;
@@ -34,8 +40,9 @@ export function ConsultarFicha({
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     heading.current?.focus();
-  }, [pacienteId]);
+  }, [pacienteId, editing]);
   useEffect(() => {
+    if (editing) return;
     let active = true;
     const c = new AbortController();
     load(pacienteId, c.signal).then(
@@ -55,10 +62,23 @@ export function ConsultarFicha({
       active = false;
       c.abort();
     };
-  }, [pacienteId, load, revision]);
+  }, [pacienteId, load, revision, editing]);
   const current = result?.id === pacienteId && result.revision === revision ? result : undefined;
   const data = current?.data,
     ficha = data?.ficha;
+  if (editing)
+    return (
+      <EditarFicha
+        pacienteId={pacienteId}
+        api={editor}
+        read={load}
+        onClose={(saved) => {
+          setEditing(false);
+          setRevision((r) => r + 1);
+          setNotice(saved ? 'Ficha clínica actualizada correctamente.' : '');
+        }}
+      />
+    );
   return (
     <section className="patient-card" aria-labelledby="consulta-ficha-title">
       <h2 id="consulta-ficha-title" ref={heading} tabIndex={-1}>
@@ -68,6 +88,17 @@ export function ConsultarFicha({
         Volver al perfil
       </button>
       {!current && <p role="status">Cargando ficha clínica…</p>}
+      {notice && <p role="status">{notice}</p>}
+      {ficha && (
+        <button
+          onClick={() => {
+            setNotice('');
+            setEditing(true);
+          }}
+        >
+          Editar ficha clínica
+        </button>
+      )}
       {current?.error === 'missing' && <p role="status">El paciente no está disponible.</p>}
       {current?.error === 'temporary' && (
         <div role="alert">

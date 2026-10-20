@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { Pool } from 'pg';
 import { createFicha } from '../../apps/api/dist/modules/fichas-clinicas/application/ficha.js';
 import { PgFichaRepository } from '../../apps/api/dist/modules/fichas-clinicas/infrastructure/pg-ficha.js';
+import { createEditarFicha } from '../../apps/api/dist/modules/fichas-clinicas/application/editar-ficha.js';
 export async function testFichas(admin, url) {
   const professionals = [randomUUID(), randomUUID()],
     patients = [];
@@ -189,6 +190,122 @@ export async function testFichas(admin, url) {
     assert.equal((await pool.query('select id from psicologia.fichas_clinicas')).rowCount, 0);
     assert.equal((await service.read({ pacienteId: patients[0] })).status, 200);
     assert.deepEqual(await snapshot(), beforeRead);
+    const editor = createEditarFicha(repository, professionals[0], Buffer.alloc(32, 6));
+    const editLoad = await editor.load({ pacienteId: patients[0] });
+    assert.equal(editLoad.status, 200);
+    assert.equal(editLoad.body.ficha.stamp, undefined);
+    const editedFields = {
+      motivoConsulta: ' Motivo editado\n  línea ficticia ',
+      antecedentesPersonales: 'Personal',
+      antecedentesFamiliares: 'Familiar',
+      medicacion: 'Medicación ficticia',
+      evaluacionClinica: 'Evaluación ficticia',
+      observacionesGenerales: '<b>Solo texto</b>',
+    };
+    const editInput = {
+      pacienteId: patients[0],
+      version: editLoad.body.ficha.version,
+      ...editedFields,
+    };
+    const race = await Promise.all([
+      editor.save(editInput),
+      editor.save({ ...editInput, motivoConsulta: 'Otro editor ficticio' }),
+    ]);
+    assert.deepEqual(race.map((r) => r.status).sort(), [200, 409]);
+    const edited = (
+      await admin.query('select * from psicologia.fichas_clinicas where paciente_id=$1', [
+        patients[0],
+      ])
+    ).rows[0];
+    for (const key of ['id', 'paciente_id', 'fecha_creacion'])
+      assert.deepEqual(edited[key], saved[key]);
+    assert.ok(
+      edited.fecha_ultima_modificacion.getTime() >= saved.fecha_ultima_modificacion.getTime(),
+    );
+    assert.equal(edited.antecedentes_personales, 'Personal');
+    assert.equal(edited.antecedentes_familiares, 'Familiar');
+    assert.equal(edited.medicacion, 'Medicación ficticia');
+    assert.equal(edited.evaluacion_clinica, 'Evaluación ficticia');
+    assert.equal(edited.observaciones_generales, '<b>Solo texto</b>');
+    assert.deepEqual(await related(), before);
+    assert.equal((await editor.save(editInput)).status, 409);
+    const fresh = await editor.load({ pacienteId: patients[0] });
+    const blankOptionals = {
+      ...editedFields,
+      motivoConsulta: 'Motivo final',
+      antecedentesPersonales: '',
+      antecedentesFamiliares: '',
+      medicacion: '',
+      evaluacionClinica: '',
+      observacionesGenerales: '',
+    };
+    assert.equal(
+      (
+        await editor.save({
+          pacienteId: patients[0],
+          version: fresh.body.ficha.version,
+          ...blankOptionals,
+        })
+      ).status,
+      200,
+    );
+    const cleared = (await service.read({ pacienteId: patients[0] })).body.ficha;
+    for (const key of [
+      'antecedentesPersonales',
+      'antecedentesFamiliares',
+      'medicacion',
+      'evaluacionClinica',
+      'observacionesGenerales',
+    ])
+      assert.equal(cleared[key], null);
+    const unchanged = await snapshot();
+    assert.equal(
+      (await editor.save({ ...editInput, pacienteId: patients[1] })).body.codigo,
+      'FICHA_AUSENTE',
+    );
+    assert.deepEqual(
+      await editor.load({ pacienteId: patients[2] }),
+      await editor.load({ pacienteId: absent }),
+    );
+    assert.equal((await editor.save({ ...editInput, pacienteId: patients[2] })).status, 404);
+    assert.deepEqual(await snapshot(), unchanged);
+    await assert.rejects(
+      repository.update(professionals[0], patients[0], empty, () => true),
+      (e) => e.code === '23514',
+    );
+    assert.deepEqual(await snapshot(), unchanged);
+    assert.equal((await pool.query('select id from psicologia.fichas_clinicas')).rowCount, 0);
+    const setStamp = async (stamp) => {
+      await admin.query('BEGIN');
+      try {
+        await admin.query('SET LOCAL session_replication_role=replica');
+        await admin.query(
+          'update psicologia.fichas_clinicas set fecha_ultima_modificacion=$1 where paciente_id=$2',
+          [stamp, patients[0]],
+        );
+        await admin.query('COMMIT');
+      } catch (e) {
+        await admin.query('ROLLBACK');
+        throw e;
+      }
+    }; // Solo fixture local: mantener dos versiones diferentes dentro del mismo milisegundo.
+    await setStamp('2026-01-01T00:00:00.000001Z');
+    const microOne = await editor.load({ pacienteId: patients[0] });
+    await setStamp('2026-01-01T00:00:00.000002Z');
+    const microTwo = await editor.load({ pacienteId: patients[0] });
+    assert.notEqual(microOne.body.ficha.version, microTwo.body.ficha.version);
+    assert.equal(
+      (await editor.save({ ...editInput, version: microOne.body.ficha.version })).status,
+      409,
+    );
+    assert.equal(
+      (await editor.save({ ...editInput, version: microTwo.body.ficha.version })).status,
+      200,
+    );
+    assert.deepEqual(await related(), before);
+    console.log(
+      'CU07 PostgreSQL: seis campos/NULL, unicidad concurrente, microsegundos, aislamiento, fechas/relaciones y rollback aprobados.',
+    );
     console.log(
       'CU06 PostgreSQL: lectura propia/ausente, textos y fechas, aislamiento, contexto tras fallo y registros intactos aprobados.',
     );

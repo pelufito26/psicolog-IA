@@ -7,6 +7,7 @@ import type { ConsultarPerfil } from './profile-client';
 import type { Editor } from './edit-client';
 import type { FichaAPI } from '../fichas-clinicas/client';
 import type { ConsultarFicha } from '../fichas-clinicas/consulta-client';
+import type { FichaEditor } from '../fichas-clinicas/edit-client';
 export function Pacientes({
   load = consultar,
   save,
@@ -14,6 +15,7 @@ export function Pacientes({
   editor,
   fichas,
   fichaLoad,
+  fichaEditor,
 }: {
   load?: Consultar;
   save?: SavePaciente;
@@ -21,6 +23,7 @@ export function Pacientes({
   editor?: Editor;
   fichas?: FichaAPI;
   fichaLoad?: ConsultarFicha;
+  fichaEditor?: FichaEditor;
 }) {
   const [form, setForm] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
@@ -63,6 +66,7 @@ export function Pacientes({
         editor={editor}
         fichas={fichas}
         fichaLoad={fichaLoad}
+        fichaEditor={fichaEditor}
         onBack={() => {
           setSelected(null);
           setRequest((r) => ({ ...r, revision: r.revision + 1 }));
