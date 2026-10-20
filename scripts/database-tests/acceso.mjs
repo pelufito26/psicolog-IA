@@ -20,6 +20,7 @@ import { PgFichaRepository } from '../../apps/api/dist/modules/fichas-clinicas/i
 import { PgPacienteRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-repository.js';
 import { PgConsultaRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-consulta.js';
 import { fakeIdentity } from '../auth-tests/fakes.mjs';
+import { testRecorridoIntegrado } from './integracion.mjs';
 export async function testAcceso(admin, url) {
   const pool = new Pool({
     connectionString: url,
@@ -646,6 +647,7 @@ export async function testAcceso(admin, url) {
       ).response.status,
       400,
     );
+    await testRecorridoIntegrado(admin, request, one, two);
     const saved = { ...one };
     await request(one, '/api/acceso/salir', {});
     assert.equal(
