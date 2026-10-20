@@ -328,3 +328,18 @@ button.secondary {
   overflow-wrap: anywhere;
   min-width: 0;
 }
+.session-list {
+  padding-left: 1.5rem;
+}
+.session-list li {
+  padding: 0.75rem 0;
+  overflow-wrap: anywhere;
+}
+#session-notes {
+  display: block;
+  width: 100%;
+  min-height: 12rem;
+  resize: vertical;
+  font: inherit;
+  padding: 0.75rem;
+}

@@ -1,9 +1,12 @@
 import { AccessStore } from '../../apps/api/dist/modules/acceso/store.js';
 import { PgPacienteRepository } from '../../apps/api/dist/modules/pacientes/infrastructure/pg-repository.js';
 import { createRegistrar } from '../../apps/api/dist/modules/pacientes/application/registrar.js';
+import { randomUUID } from 'node:crypto';
+import { createSesiones } from '../../apps/api/dist/modules/sesiones-clinicas/application/sesiones.js';
+import { PgSesionRepository } from '../../apps/api/dist/modules/sesiones-clinicas/infrastructure/pg-sesiones.js';
 
 // Solo llamado por el harness explícito, contra su base local desechable.
-export async function seedPerfil(fake, pool) {
+export async function seedPerfil(fake, pool, sessions = false) {
   const email = 'perfil-demo@example.invalid';
   await fake.identity.register({
     email,
@@ -27,5 +30,17 @@ export async function seedPerfil(fake, pool) {
       telefono: '0000000',
     });
     if (result.status !== 201) throw new Error('No se pudo preparar la fixture ficticia');
+    if (sessions && n === 21) {
+      const service = createSesiones(new PgSesionRepository(pool), professional);
+      for (let i = 1; i <= 25; i++) {
+        const session = await service.register({
+          pacienteId: result.body.id,
+          operacionId: randomUUID(),
+          fechaSesion: '2000-01-01',
+          anotacionesClinicas: 'Sesión ficticia de demostración ' + i,
+        });
+        if (session.status !== 201) throw new Error('No se pudo preparar la fixture de sesiones');
+      }
+    }
   }
 }
