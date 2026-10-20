@@ -1,4 +1,6 @@
 import { Pool } from 'pg';
+import { randomBytes } from 'node:crypto';
+import { createEditarSesion } from '../application/editar-sesion.js';
 import { databaseConfig } from '../../../infrastructure/database/connection.js';
 import {
   createSesiones,
@@ -8,6 +10,7 @@ import {
 import { PgSesionRepository } from '../infrastructure/pg-sesiones.js';
 export function createSesionRuntime(env: NodeJS.ProcessEnv) {
   let pool: Pool | undefined;
+  const secret = randomBytes(32);
   const execute =
     (key: keyof SesionOperations): SesionHandler =>
     async (input, professional) => {
@@ -19,12 +22,20 @@ export function createSesionRuntime(env: NodeJS.ProcessEnv) {
         return { status: 503, body: { codigo: 'SESIONES_NO_CONFIGURADAS' } };
       try {
         pool ??= new Pool(databaseConfig(env));
-        return await createSesiones(new PgSesionRepository(pool), professional)[key](input);
+        const repository = new PgSesionRepository(pool);
+        return await (key === 'load' || key === 'save'
+          ? createEditarSesion(repository, professional, secret)[key](input)
+          : createSesiones(repository, professional)[key](input));
       } catch {
         return {
           status: 503,
           body: {
-            codigo: key === 'register' ? 'REGISTRO_NO_CONFIRMADO' : 'SESIONES_NO_DISPONIBLES',
+            codigo:
+              key === 'save'
+                ? 'GUARDADO_NO_CONFIRMADO'
+                : key === 'register'
+                  ? 'REGISTRO_NO_CONFIRMADO'
+                  : 'SESIONES_NO_DISPONIBLES',
           },
         };
       }
@@ -36,6 +47,8 @@ export function createSesionRuntime(env: NodeJS.ProcessEnv) {
       check: execute('check'),
       history: execute('history'),
       detail: execute('detail'),
+      load: execute('load'),
+      save: execute('save'),
     },
     close: async () => {
       await pool?.end();

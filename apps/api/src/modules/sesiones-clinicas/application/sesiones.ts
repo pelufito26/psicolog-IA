@@ -44,7 +44,7 @@ export interface SesionResult {
 }
 export type SesionHandler = (input: unknown, professional?: string) => Promise<SesionResult>;
 export type SesionOperations = Record<
-  'prepare' | 'register' | 'check' | 'history' | 'detail',
+  'prepare' | 'register' | 'check' | 'history' | 'detail' | 'load' | 'save',
   SesionHandler
 >;
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -69,11 +69,11 @@ export function createSesiones(
   repository: SesionRepository,
   professional: string,
   now = () => new Date(),
-): SesionOperations {
+): Omit<SesionOperations, 'load' | 'save'> {
   const invalid = { status: 400, body: { codigo: 'CONSULTA_INVALIDA' } };
   const missing = { status: 404, body: { codigo: 'PACIENTE_NO_DISPONIBLE' } };
   const execute =
-    (operation: keyof SesionOperations): SesionHandler =>
+    (operation: keyof Omit<SesionOperations, 'load' | 'save'>): SesionHandler =>
     async (input) => {
       const b =
         input && typeof input === 'object' && !Array.isArray(input)

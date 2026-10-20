@@ -21,6 +21,8 @@ export function sesionRoutes(operations: SesionOperations) {
     ['comprobar', 'check'],
     ['historial', 'history'],
     ['detalle', 'detail'],
+    ['edicion', 'load'],
+    ['actualizar', 'save'],
   ] as const)
     router.post('/' + path, async (req, res) => {
       try {
@@ -28,7 +30,12 @@ export function sesionRoutes(operations: SesionOperations) {
         res.status(r.status).json(r.body);
       } catch {
         res.status(503).json({
-          codigo: key === 'register' ? 'REGISTRO_NO_CONFIRMADO' : 'SESIONES_NO_DISPONIBLES',
+          codigo:
+            key === 'save'
+              ? 'GUARDADO_NO_CONFIRMADO'
+              : key === 'register'
+                ? 'REGISTRO_NO_CONFIRMADO'
+                : 'SESIONES_NO_DISPONIBLES',
         });
       }
     });

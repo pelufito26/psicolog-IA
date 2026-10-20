@@ -214,7 +214,8 @@ test('historial error no es vacío, reintenta y páginas/detalle conservan conte
   await screen.findByText('Página de sesiones 2');
   fireEvent.click(screen.getByRole('button', { name: /Ver detalle de sesión/ }));
   await screen.findByText('<b>Solo texto ficticio</b> línea');
-  expect(screen.queryByRole('button', { name: /Editar|Eliminar/ })).toBeNull();
+  expect(screen.getByRole('button', { name: 'Editar sesión clínica' })).toBeTruthy();
+  expect(screen.queryByRole('button', { name: /Eliminar/ })).toBeNull();
   fireEvent.click(screen.getByRole('button', { name: 'Volver al historial' }));
   await screen.findByText('Página de sesiones 2');
 });
