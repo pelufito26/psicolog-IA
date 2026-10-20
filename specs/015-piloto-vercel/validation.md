@@ -1,6 +1,6 @@
 # Evidencia del piloto Vercel
 
-Estado: build de comprobación online, con API cerrada y sin credenciales piloto; aceptación funcional online pendiente. Base: origin/main 6eff8944faadba2a1d68f27c2ff2f4439bb65ca5. Revisiones VERCEL-r1 y VERCEL-plan-r1/VERCEL-tasks-r1 aprobadas en conversación el 20 de octubre de 2026.
+Estado vigente: piloto online configurado en https://psicologia-piloto.vercel.app; T5 completada, T6 pendiente del ingreso personal y recorrido. Las secciones de preparación conservan la secuencia de fallos y comprobaciones; la habilitación final se detalla al cierre del documento. Base: origin/main 6eff8944faadba2a1d68f27c2ff2f4439bb65ca5. Revisiones VERCEL-r1 y VERCEL-plan-r1/VERCEL-tasks-r1 aprobadas en conversación el 20 de octubre de 2026.
 
 ## Verificaciones locales
 
@@ -52,3 +52,24 @@ Pooler oficial obtenido del panel: aws-0-us-east-1.pooler.supabase.com:6543, usu
 La revisión automática bloqueó la transferencia de credenciales a Vercel porque pidió confirmación expresa del payload y proyecto exactos, aun estando descritos en el plan aprobado. Se solicitó al usuario para Production de psicologia-piloto: credencial DB restringida, CA, clave Resend existente, email piloto y dos secretos nuevos; también Site URL/redirección HTTPS exactas en Supabase conservando local. Se comprobó después del bloqueo que Production seguía sin variables. Hasta recibir respuesta no se transfieren credenciales ni se cambia Supabase.
 
 Regresión adicional de V4: confirmación de duplicados emitida por una instancia y aceptada por otra con secreto estable, rechazo si cambian profesional o datos. environment.test.ts: cuatro pruebas correctas. Esta prueba adicional no altera el código de la aplicación desplegada; CI del próximo commit pendiente.
+
+## Habilitación autorizada del piloto
+
+El usuario confirmó expresamente la pregunta sobre credenciales y redirecciones: «Sí, autorizo esas credenciales y redirecciones en ese proyecto». Se conservó el destino exacto: cuenta pelufito26s-projects, proyecto nuevo psicologia-piloto, solo Production. No se volvió a pedir la aprobación del plan.
+
+Dos intentos de transferencia con la CLI devolvieron Invalid JSON (400), sin guardar variables; sesión y ausencia de variables comprobadas. Se usó entonces la API REST oficial con la sesión CLI autorizada, mismo payload y destino, obteniendo 201 y cero claves fallidas. Se guardaron 13 variables cifradas, incluidos credencial DB restringida/CA, clave Resend existente, email piloto y dos secretos criptográficos nuevos. Valores y respuesta con credenciales no se imprimieron; claves estables locales fuera de Git. Verificación de metadata: 13 en Production, cero en Preview y cero en Development. Escaneo de HTML y dos assets públicos JS/CSS contra credenciales y claves de firma: cero coincidencias.
+
+En Supabase se guardó Site URL https://psicologia-piloto.vercel.app/ y se añadió únicamente esa redirección exacta. Se conservó http://127.0.0.1:5173/; panel confirma dos URLs y guardado final. Captura fuera de Git: ../vercel-supabase-urls.png. SMTP, remitente, roles y esquema permanecieron iguales. Sin migración ni ampliación de permisos.
+
+Commit desplegado c88d93bc4a287311f644132038c1b52488599d32; ambos controles CI completados success, incluida la prueba adicional (200 web + 170 API). Revisión independiente del delta d70cc1e a árbol a1f56dc15edbc8b2a245db9ee1007cb2a6a8f275 sin hallazgos accionables. Build remoto con credenciales de servidor dpl_2tWGNxXjZ5WC3TpegqFXTaVbFCRy, Node 24.21.0/npm 11.19.0 y alias estable https://psicologia-piloto.vercel.app. Revisión de código y CI corresponden al SHA exacto; la aceptación online no se infiere del build.
+
+Comprobaciones HTTP sobre alias estable con sesión anónima creada solo para pruebas, sin extraer cookies del navegador del usuario:
+
+- /api/health: 200 JSON status ok.
+- /api/no-existe: 404 JSON RUTA_NO_DISPONIBLE; no devuelve la SPA.
+- /api/acceso/estado: 200, anonimo, no-store; cookie HttpOnly/Secure/SameSite=Strict. La consulta utiliza el pooler y la configuración real del servidor.
+- Consulta clínica con CSRF válido y sin sesión autenticada: 401 INGRESO_REQUERIDO.
+- Origen ajeno o CSRF incorrecto: 403 SOLICITUD_NO_PERMITIDA, no-store.
+- Ingreso con identidad ficticia fuera de la cuenta admitida: 401 CREDENCIALES_INVALIDAS, sin invocar identidad/correo según el control probado localmente.
+
+Lectura del proveedor antes de solicitar login al usuario: cuatro mensajes al destinatario aprobado, cuatro entregados; el conteo previo histórico era dos y no se atribuye aquí el origen de la diferencia. Se toma conservadoramente ese conteo para el presupuesto: quedan dos de los seis autorizados. El agente no envió registros, recuperación ni códigos en estas comprobaciones. Se pidió un único ingreso personal en la URL online, con aviso antes de reenviar. Login/código reales online, CU01–CU11, móvil/otro dispositivo y logout todavía pendientes de la intervención del usuario. No se inspeccionan contraseña, OTP ni sesión real del navegador mientras completa ese paso.

@@ -1,10 +1,10 @@
 # Piloto online en Vercel
 
-Estado: preparación del piloto, aún sin aceptación online. Especificación y alcance: specs/015-piloto-vercel/. Solo pacientes ficticios; acceso inicial limitado a la cuenta profesional autorizada. Recuperación real pendiente. No representa habilitación para uso clínico productivo.
+Estado: piloto desplegado en https://psicologia-piloto.vercel.app, API/configuración anónima verificadas; aceptación del login y recorrido online pendientes. Especificación y alcance: specs/015-piloto-vercel/. Solo pacientes ficticios; acceso inicial limitado a la cuenta profesional autorizada. Recuperación real pendiente. No representa habilitación para uso clínico productivo.
 
 ## Arquitectura y entrega
 
-Un proyecto nuevo en la cuenta personal del usuario; no reutilizar ni modificar proyectos de v0. Raíz del repositorio, frontend Vite en apps/web/dist, API Express exportada por api/index.ts en Node 24. vercel.json dirige /api/* a la función y el resto a la SPA. Conservar método/path/query/cookies; errores desconocidos de API responden JSON 404. Vite sirve estáticos y no recibe secretos del servidor.
+Proyecto nuevo psicologia-piloto en pelufito26s-projects, cuenta personal del usuario; no reutilizar ni modificar proyectos de v0. Raíz del repositorio, frontend Vite en apps/web/dist, API Express exportada por api/index.ts en Node 24. vercel.json dirige /api/* a la función y el resto a la SPA. Conservar método/path/query/cookies; errores desconocidos de API responden JSON 404. Vite sirve estáticos y no recibe secretos del servidor.
 
 La función crea una sola aplicación y un pool compartido de máximo una conexión por instancia, con TLS verificado, timeouts y rol restringido. No conecta ni migra durante build. El pooler en modo transacción debe funcionar con el usuario restringido existente y su límite de conexiones; varias instancias pueden esperar o recibir un error temporal, nunca se amplían permisos para eludir ese límite. El contexto del profesional se establece dentro de cada transacción y se descarta al finalizar. Una instancia nueva usa las mismas claves estables para versiones y confirmaciones.
 
